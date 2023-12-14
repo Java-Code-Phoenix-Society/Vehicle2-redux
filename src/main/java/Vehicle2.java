@@ -1,3 +1,5 @@
+import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.PixelGrabber;
@@ -7,11 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.stream.IntStream;
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import static java.lang.Integer.parseInt;
 
 public class Vehicle2 extends JFrame implements ActionListener {
     public static GameParams gp;
@@ -38,14 +35,14 @@ public class Vehicle2 extends JFrame implements ActionListener {
         Vehicle2 frame = new Vehicle2();
         frame.setTitle("Vehicle 2: Redux");
         frame.setUndecorated(true);
-        frame.setSize(parseInt(gp.paramMap.get("width")), parseInt(gp.paramMap.get("height")));
+        frame.setSize(gp.getInt("width"), gp.getInt("height"));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         // Calculate the center position
-        int centerX = (screenSize.width - parseInt(gp.paramMap.get("width"))) / 2;
-        int centerY = (screenSize.height - parseInt(gp.paramMap.get("height"))) / 2;
+        int centerX = (screenSize.width - gp.getInt("width")) / 2;
+        int centerY = (screenSize.height - gp.getInt("height")) / 2;
 
         // Set the frame location
         frame.setLocation(centerX, centerY);
@@ -149,7 +146,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
                             this.pVehicle.ropeMin, new Color(0, 80, 185));
 
             this.pVehicle.vParts[this.pVehicle.nf].sag = this.worldParameters.scaleSize *
-                    (double) parseInt(gp.paramMap.get("l0Rope"));
+                    (double) gp.getInt("l0Rope");
             this.pVehicle.vParts[this.pVehicle.nf].partActive = false;
             ++this.pVehicle.nf;
             ++n;
@@ -164,7 +161,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
                     new VehiclePart(this.pVehicle.ropeSegments[1] + n - 1, this.pVehicle.ropeSegments[1] + n,
                             this.pVehicle.ropeMin, new Color(70, 170, 255));
             this.pVehicle.vParts[this.pVehicle.nf].sag = this.worldParameters.scaleSize *
-                    (double) parseInt(gp.paramMap.get("l0Rope"));
+                    (double) gp.getInt("l0Rope");
             this.pVehicle.vParts[this.pVehicle.nf].partActive = false;
             ++this.pVehicle.nf;
             ++n;
@@ -173,8 +170,8 @@ public class Vehicle2 extends JFrame implements ActionListener {
         while (n < this.pVehicle.np) {
             this.pVehicle.partList[n].lx *= this.worldParameters.scaleSize;
             this.pVehicle.partList[n].ly *= this.worldParameters.scaleSize;
-            this.pVehicle.partList[n].lx += parseInt(gp.paramMap.get("StartX"));
-            this.pVehicle.partList[n].ly += parseInt(gp.paramMap.get("StartY"));
+            this.pVehicle.partList[n].lx += gp.getInt("StartX");
+            this.pVehicle.partList[n].ly += gp.getInt("StartY");
             ++n;
         }
         n = 0;
@@ -236,8 +233,8 @@ public class Vehicle2 extends JFrame implements ActionListener {
             char mappedChar = mapPixelToChar(red, green, blue);
 
             // Since we are using parallel processing, ensure that the operation on the shared resource is thread-safe
-            synchronized (this.worldParameters.n) {
-                this.worldParameters.n[n % levelWidth][n / levelWidth] = mappedChar;
+            synchronized (this.worldParameters.levelMap) {
+                this.worldParameters.levelMap[n % levelWidth][n / levelWidth] = mappedChar;
             }
         });
     }
@@ -272,6 +269,10 @@ public class Vehicle2 extends JFrame implements ActionListener {
         final double ENGINE_FORCE = this.pVehicle.fEngine;
         double d2 = 0.0;
         double d3 = 0.0;
+        long startTime = System.currentTimeMillis();
+        long delay = 5000; // 5 seconds in milliseconds
+        boolean insideGoal = false;
+
         while (this.runState) { // Main loop
             this.worldParameters.x = this.worldParameters.wpX;
             this.worldParameters.y = this.worldParameters.wpY;
@@ -457,10 +458,20 @@ public class Vehicle2 extends JFrame implements ActionListener {
             if (this.gameCounter != 0) continue;
 
             // Exit to finish 😆
-            boolean inside = isCoordinateInArea((int) pVehicle.partList[5].lx, (int) pVehicle.partList[5].lx,
-                    1485,370,100,70);
-            if(inside) {
-                System.exit(0);
+            boolean inside1 = isCoordinateInArea((int) pVehicle.partList[10].lx, (int) pVehicle.partList[10].ly);
+            boolean inside2 = isCoordinateInArea((int) pVehicle.partList[21].lx, (int) pVehicle.partList[21].ly);
+
+            if (inside1 && inside2 && !insideGoal) {
+                // Set the start time when both conditions become true for the first time
+                startTime = System.currentTimeMillis();
+                insideGoal = true;
+            }
+            if (insideGoal) {
+                // Check if conditions remain true for 5 seconds
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                if (elapsedTime >= delay) {
+                    System.exit(0);
+                }
             }
 
             this.repaint();
@@ -479,39 +490,38 @@ public class Vehicle2 extends JFrame implements ActionListener {
      *
      * @param x The x-coordinate to check.
      * @param y The y-coordinate to check.
-     * @param areaX The x-coordinate of the area's top-left corner.
-     * @param areaY The y-coordinate of the area's top-left corner.
-     * @param areaWidth The width of the area.
-     * @param areaHeight The height of the area.
      * @return {@code true} if the coordinate (x, y) lies within the bounds of the area defined by
-     *         the top-left corner (areaX, areaY) with the specified width and height;
-     *         {@code false} otherwise.
+     * the Goal variables defined in {@link GameParams}, {@code false} otherwise.
      */
-    public boolean isCoordinateInArea(int x, int y, int areaX, int areaY, int areaWidth, int areaHeight) {
+    public boolean isCoordinateInArea(int x, int y) {
+        int areaX = gp.getInt("GoalX");
+        int areaY = gp.getInt("GoalY");
+        int areaWidth = gp.getInt("GoalWidth");
+        int areaHeight = gp.getInt("GoalHeight");
+
         boolean withinXBounds = x >= areaX && x < (areaX + areaWidth);
         boolean withinYBounds = y >= areaY && y < (areaY + areaHeight);
         return withinXBounds && withinYBounds;
     }
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
 
     }
 
     public Image loadImage(String param) {
-        String imagePath = gp.paramMap.get(param); // Assuming getParameter is available in your context
+        String imagePath = gp.paramMap.get(param);
         Image imgBuffer = null;
         if (imagePath != null) {
-            // Assuming the image is in the same directory as your class
             File imageFile = new File(imagePath);
 
             try {
                 imgBuffer = ImageIO.read(imageFile);
             } catch (IOException e) {
                 e.printStackTrace();
-                // Handle the exception appropriately based on your requirements
             }
         } else {
-            // Handle the case where the parameter "Bild" is not found or is null
             System.err.println("Image not found!");
             System.exit(1);
         }
@@ -524,7 +534,6 @@ public class Vehicle2 extends JFrame implements ActionListener {
                 Desktop.getDesktop().browse(url.toURI());
             } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
-                // Handle the exception appropriately based on your requirements
             }
         } else {
             // Desktop not supported, handle this case if needed
@@ -662,7 +671,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
     }
 
     class WorldParameters {
-        final char[][] n;
+        final char[][] levelMap;
         double gravity;
         double dt;
         double friction;
@@ -681,7 +690,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
         boolean windRope = false;
         boolean unwindRope = false;
         double maxFrameWidth;
-        double a;
+        //double a;
         double maxFrameHeight;
         double scaleM;
         double scaleSize;
@@ -690,26 +699,26 @@ public class Vehicle2 extends JFrame implements ActionListener {
 
         WorldParameters() {
             this.maxFrameWidth = screenWidth - 1;
-            this.a = 0.0;
+            //this.a = 0.0;
             this.maxFrameHeight = screenHeight - 1;
-            this.levelWidth = parseInt(gp.paramMap.get("Bild_w"));
-            this.levelHeight = parseInt(gp.paramMap.get("Bild_h"));
-            this.scaleM = 0.01 * (double) parseInt(gp.paramMap.get("scaleM"));
-            this.scaleF = 0.01 * (double) parseInt(gp.paramMap.get("scaleF"));
-            this.scaleSize = 0.01 * (double) parseInt(gp.paramMap.get("scaleSize"));
-            this.dt = 0.001 * (double) parseInt(gp.paramMap.get("dt"));
-            this.delay = parseInt(gp.paramMap.get("delay"));
-            this.gravity = parseInt(gp.paramMap.get("Gravity"));
-            this.friction = 0.001 * (double) parseInt(gp.paramMap.get("Reibung"));
-            this.frictionW = 0.001 * (double) parseInt(gp.paramMap.get("ReibungW"));
-            this.n = new char[this.levelWidth][this.levelHeight];
+            this.levelWidth = gp.getInt("Bild_w");
+            this.levelHeight = gp.getInt("Bild_h");
+            this.scaleM = 0.01 * (double) gp.getInt("scaleM");
+            this.scaleF = 0.01 * (double) gp.getInt("scaleF");
+            this.scaleSize = 0.01 * (double) gp.getInt("scaleSize");
+            this.dt = 0.001 * (double) gp.getInt("dt");
+            this.delay = gp.getInt("delay");
+            this.gravity = gp.getInt("Gravity");
+            this.friction = 0.001 * (double) gp.getInt("Reibung");
+            this.frictionW = 0.001 * (double) gp.getInt("ReibungW");
+            this.levelMap = new char[this.levelWidth][this.levelHeight];
         }
 
         public char checkPosition(int x, int y) {
             if (x < 0 || y < 0 || x >= this.levelWidth || y >= this.levelHeight) {
                 return 'e';
             }
-            return this.n[x][y];
+            return this.levelMap[x][y];
         }
     }
 
@@ -746,18 +755,18 @@ public class Vehicle2 extends JFrame implements ActionListener {
             px = parts;
             vParts = new VehiclePart[this.py];
             partList = new Connector[this.px];
-            mHook = 0.01 * (double) parseInt(gp.paramMap.get("mHook"));
-            mRope = 0.01 * (double) parseInt(gp.paramMap.get("mRope"));
-            mWheels = 0.01 * (double) parseInt(gp.paramMap.get("mWheels"));
-            mAxis = 0.01 * (double) parseInt(gp.paramMap.get("mAxis"));
-            mCorpus = 0.01 * (double) parseInt(gp.paramMap.get("mCorpus"));
-            ropeMin = worldParameters.scaleF * (double) parseInt(gp.paramMap.get("FRopeMin"));
-            ropeMax = worldParameters.scaleF * (double) parseInt(gp.paramMap.get("FRopeMax"));
-            fWheels = parseInt(gp.paramMap.get("FWheels"));
-            fCorpus = parseInt(gp.paramMap.get("FCorpus"));
+            mHook = 0.01 * (double) gp.getInt("mHook");
+            mRope = 0.01 * (double) gp.getInt("mRope");
+            mWheels = 0.01 * (double) gp.getInt("mWheels");
+            mAxis = 0.01 * (double) gp.getInt("mAxis");
+            mCorpus = 0.01 * (double) gp.getInt("mCorpus");
+            ropeMin = worldParameters.scaleF * (double) gp.getInt("FRopeMin");
+            ropeMax = worldParameters.scaleF * (double) gp.getInt("FRopeMax");
+            fWheels = gp.getInt("FWheels");
+            fCorpus = gp.getInt("FCorpus");
             fEngine = 0.1 * worldParameters.scaleSize * worldParameters.dt *
-                    (double) parseInt(gp.paramMap.get("FEngine"));
-            v0Rope = parseInt(gp.paramMap.get("v0Rope"));
+                    (double) gp.getInt("FEngine");
+            v0Rope = gp.getInt("v0Rope");
         }
 
         public void drawVehicle() {

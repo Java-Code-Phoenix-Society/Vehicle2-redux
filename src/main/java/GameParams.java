@@ -1,5 +1,8 @@
 import java.util.HashMap;
 
+/**
+ * Class to handle the parameters that the java applet would have got from the HTML
+ */
 public class GameParams {
     public HashMap<String, String> paramMap;
     GameParams() {
@@ -8,6 +11,10 @@ public class GameParams {
         paramMap.put("Bild_h", "1200");
         paramMap.put("Bild", "Levels/LevelLong_f.gif");
         paramMap.put("Bild_c", "Levels/LevelLong_c.jpg");
+        paramMap.put("GoalX","1485");
+        paramMap.put("GoalY","370");
+        paramMap.put("GoalWidth","100");
+        paramMap.put("GoalHeight","70");
 
         paramMap.put("StartX", "80");
         paramMap.put("StartY", "1155");
@@ -38,5 +45,12 @@ public class GameParams {
         paramMap.put("ReibungW", "965"); // Friction in thousandths
         paramMap.put("width", "800"); // pixels
         paramMap.put("height", "600"); // pixels
+    }
+
+    public int getInt(String key) {
+        return Integer.parseInt(paramMap.get(key));
+    }
+    public void putInt(String key, int i) {
+         paramMap.put(key, String.valueOf(i));
     }
 }
