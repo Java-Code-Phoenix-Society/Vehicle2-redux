@@ -24,9 +24,9 @@ Included game feature: water; You can swim and dive.
 Like a submarine, you can change the "density" of the vehicle to make it dive into the water or let it gently float to
 the surface using the CURSOR UP and CURSOR DOWN keys.
 
-You can not "win" the game, but you can try to reach the area with the "goal" sign as quickly as possible! 
+Added features: Levels. Getting to the "Goal" will take you to the next level. The goal in the last level will exit the game.
 
 You can create your own levels, The .jpg defines the "appearance", the .gif has 3 colors that tell the app what type
-of terrain is on every pixel.
+of terrain is on every pixel. This is described in the Level-HowTo.md file.
 
 Based on the original applet from "www.eigelb.at". Included is also the alternate level that was on the original website.

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Vehicle2-redux:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Vehicle2_redux_jar</output-path>
+    <root id="archive" name="Vehicle2-redux.jar">
+      <element id="module-output" name="Vehicle2-redux" />
+    </root>
+  </artifact>
+</component>

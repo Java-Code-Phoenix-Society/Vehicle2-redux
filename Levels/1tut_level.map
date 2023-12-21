@@ -1,0 +1,41 @@
+; Level details
+Bild_w=1600
+Bild_h=1200
+Bild=Levels/1tut_level_f.gif
+Bild_c=Levels/1tut_level_c.jpg
+GoalX=8
+GoalY=740
+GoalWidth=125
+GoalHeight=60
+
+StartX=80
+StartY=1155
+
+; percent
+scaleSize=70
+scaleF=10
+scaleM=100
+
+; hundredths
+mHook=100
+mRope=50
+mWheels=100
+mAxis=200
+mCorpus=200
+
+l0Rope=2
+v0Rope=1500
+
+FRopeMin=100
+FRopeMax=4000
+FWheels=5000
+FCorpus=10000
+FEngine=60
+
+Gravity=70
+dt=25
+delay=10
+
+; Friction in thousandths
+Reibung=990
+ReibungW=965
