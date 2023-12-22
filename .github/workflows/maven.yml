@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir ./Vehicle2redux
           cp -r ./target/Vehicle2-redux-1.0-SNAPSHOT.jar ./Vehicle2redux/
-          cp -r ./Levels/* ./Vehicle2redux/
+          cp -r ./Levels ./Vehicle2redux/
         shell: bash
 
       - name: Upload Artifact

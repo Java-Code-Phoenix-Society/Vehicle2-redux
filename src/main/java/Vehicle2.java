@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.stream.IntStream;
 
 public class Vehicle2 extends JFrame implements ActionListener {
@@ -31,9 +32,11 @@ public class Vehicle2 extends JFrame implements ActionListener {
     int mouseX = 0;
     int mouseY = 0;
     boolean shiftPressed = false;
+    static HashMap<String,String> levelTimes;
 
     public static void main(String[] args) {
         int level = 0;
+        levelTimes = new HashMap<>();
         Vehicle2 frame = new Vehicle2();
         frame.setTitle("Vehicle 2: Redux");
         frame.setUndecorated(true);
@@ -58,6 +61,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
             frame.run();
             level++;
         }
+        LevelUtilities.writeHashmapToFile(levelTimes,"Level-times.txt");
         System.exit(0);
     }
 
@@ -519,6 +523,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
                 }
                 if (elapsedTime >= delay) {
                     runState = false;
+                    levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
                 }
             }
 
@@ -742,7 +747,6 @@ public class Vehicle2 extends JFrame implements ActionListener {
         boolean windRope = false;
         boolean unwindRope = false;
         double maxFrameWidth;
-        //double a;
         double maxFrameHeight;
         double scaleM;
         double scaleSize;
@@ -751,7 +755,6 @@ public class Vehicle2 extends JFrame implements ActionListener {
 
         WorldParameters() {
             this.maxFrameWidth = screenWidth - 1;
-            //this.a = 0.0;
             this.maxFrameHeight = screenHeight - 1;
             this.levelWidth = gp.getInt("Bild_w");
             this.levelHeight = gp.getInt("Bild_h");

@@ -1,7 +1,9 @@
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Utility class for handling levels and maps.
@@ -137,5 +139,27 @@ public class LevelUtilities {
         }
         System.out.println(exceptionList);
         System.out.println(test);
+    }
+
+    public static void writeHashmapToFile(HashMap<String, String> map, String filename) {
+        RandomAccessFile randomAccessFile;
+        try {
+            randomAccessFile = new RandomAccessFile(filename, "rw");
+            randomAccessFile.seek(0L);
+            randomAccessFile.setLength(0L);
+        } catch (Exception e) {
+            System.err.println("There was an error preparing the file in writeHashmapToFile().");
+            return;
+        }
+
+        ArrayList<String> arrayList = new ArrayList<>(map.keySet());
+        try {
+            for (String o : arrayList) {
+                randomAccessFile.writeBytes(o + "=" + map.get(o) + "\n");
+            }
+            randomAccessFile.close();
+        } catch (Exception e) {
+            System.err.println("There was an error writing the file in writeHashmapToFile().");
+        }
     }
 }
