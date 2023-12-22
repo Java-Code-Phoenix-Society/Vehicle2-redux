@@ -23,7 +23,7 @@ jobs:
       run: mvn clean package
 
     - name: Zip JAR with Levels folder
-      run: zip -r release.zip target/*.jar Levels/
+      run: zip -r Vehicle2redux.zip target/*.jar Levels/
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
