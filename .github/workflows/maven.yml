@@ -32,5 +32,5 @@ jobs:
       with:
         name: Vehicle2redux
         path: |
-          target/Vehicle2-redux-1.0-SNAPSHOT.jar
+          */Vehicle2-redux-1.0-SNAPSHOT.jar
           Levels/
