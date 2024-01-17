@@ -12,57 +12,40 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.IntStream;
 
-public class Vehicle2 extends JFrame implements ActionListener {
+public class Vehicle2 extends JPanel implements ActionListener {
+    public int currentLevel;
     public static GameParams gp;
-    static ArrayList<LevelMap> maps;
+    boolean cursorState = false;
+    boolean mouseState = false;
+    boolean runState = true;
+    boolean shiftPressed = false;
+    int gameCounter = 0;
+    int graphicsReady = 0;
+    int screenWidth;
+    int screenHeight;
+    int mouseX = 0;
+    int mouseY = 0;
+    long levelStartTime;
+    Graphics graphics;
     Image imgBG;
     Image screenBuffer;
     Image tileImg;
-    Graphics graphics;
     MediaTracker tracker;
-    boolean runState = true;
-    boolean cursorState = false;
-    int gameCounter = 0;
-    int graphicsReady = 0;
-    WorldParameters worldParameters;
     PlayerVehicle pVehicle;
-    int screenWidth;
-    int screenHeight;
-    boolean mouseState = false;
-    int mouseX = 0;
-    int mouseY = 0;
-    boolean shiftPressed = false;
-    static HashMap<String,String> levelTimes;
+    WorldParameters worldParameters;
+    public static ArrayList<LevelMap> maps;
+    static HashMap<String, String> levelTimes;
+    double lxt = 0.0;
+    double lyt = 0.0;
+    long startTime = System.currentTimeMillis();
+    long delay = 5000; // 5 seconds: Time to stay in the goal
+    boolean insideGoal = false;
 
-    public static void main(String[] args) {
-        int level = 0;
+    public Vehicle2() {
+        currentLevel = 0;
         levelTimes = new HashMap<>();
-        Vehicle2 frame = new Vehicle2();
-        frame.setTitle("Vehicle 2: Redux");
-        frame.setUndecorated(true);
-        frame.setSize(800, 600);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-        // Calculate the center position
-        int centerX = (screenSize.width - 800) / 2;
-        int centerY = (screenSize.height - 600) / 2;
-
-        // Set the frame location
-        frame.setLocation(centerX, centerY);
-
         maps = LevelUtilities.getLevelMaps();
-
-        // Go to main Loop
-        while (level < maps.size()) {
-            gp = maps.get(level).lp;
-            frame.init();
-            frame.run();
-            level++;
-        }
-        LevelUtilities.writeHashmapToFile(levelTimes,"Level-times.txt");
-        System.exit(0);
+        setSize(800, 600);
     }
 
     public void paint(Graphics graphics) {
@@ -74,6 +57,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
     }
 
     public void init() {
+        gp = maps.get(currentLevel).lp;
         int n, p = 43, c = 83;
         int n2 = 40, n3;
         double d2 = 0.0, d3 = 0.0;
@@ -172,7 +156,8 @@ public class Vehicle2 extends JFrame implements ActionListener {
         while (n < this.pVehicle.maxRopeSegments) {
             processPart(n, greenColor);
             this.pVehicle.vParts[this.pVehicle.nf] = n == 0 ?
-                    new VehiclePart(22, this.pVehicle.ropeSegments[1], this.pVehicle.ropeMin, new Color(70, 170, 255)) :
+                    new VehiclePart(22, this.pVehicle.ropeSegments[1],
+                            this.pVehicle.ropeMin, new Color(70, 170, 255)) :
                     new VehiclePart(this.pVehicle.ropeSegments[1] + n - 1, this.pVehicle.ropeSegments[1] + n,
                             this.pVehicle.ropeMin, new Color(70, 170, 255));
             this.pVehicle.vParts[this.pVehicle.nf].sag = this.worldParameters.scaleSize *
@@ -200,11 +185,13 @@ public class Vehicle2 extends JFrame implements ActionListener {
 
         // Add the control listeners once. Probably not the best way
         if (graphicsReady == 0) {
-            this.addKeyListener(new GameControls());
             this.addMouseListener(new xMA());
             this.addMouseMotionListener(new MouseControls());
+            this.getRootPane().getParent().addKeyListener(new GameControls());
         }
         this.graphicsReady = 1;
+        levelStartTime = System.currentTimeMillis(); // Start the timer
+        runState = true;
     }
 
     private void processPart(int n, Color color) {
@@ -286,15 +273,8 @@ public class Vehicle2 extends JFrame implements ActionListener {
         final double VELOCITY_MULTIPLIER = 3.0;
         final int PARTS_COUNT = 20;
         final double ENGINE_FORCE = this.pVehicle.fEngine;
-        double lxt = 0.0;
-        double lyt = 0.0;
-        long startTime = System.currentTimeMillis();
-        long delay = 5000; // 5 seconds: Time to stay in the goal
-        boolean insideGoal = false;
-        long levelStartTime = System.currentTimeMillis(); // Start the timer
-        runState = true;
 
-        while (this.runState) { // Main loop
+        // Main loop
             this.worldParameters.x = this.worldParameters.wpX;
             this.worldParameters.y = this.worldParameters.wpY;
             double d4 = 0.0;
@@ -492,7 +472,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
 
             ++this.gameCounter;
             this.gameCounter %= 2;
-            if (this.gameCounter != 0) continue;
+            if (this.gameCounter != 0) return;
 
             boolean inside1 = isCoordinateInArea((int) pVehicle.partList[10].lx, (int) pVehicle.partList[10].ly);
             boolean inside2 = isCoordinateInArea((int) pVehicle.partList[21].lx, (int) pVehicle.partList[21].ly);
@@ -529,13 +509,13 @@ public class Vehicle2 extends JFrame implements ActionListener {
 
             this.repaint();
             //update(this.graphics);
-            if (this.worldParameters.delay <= 0) continue;
+            if (this.worldParameters.delay <= 0) return;
             try {
                 Thread.sleep(this.worldParameters.delay);
             } catch (InterruptedException interruptedException) {
                 // empty catch block
             }
-        }
+
     }
 
     /**
@@ -612,6 +592,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
             // Do nothing
         }
 
+        @Override
         public void keyPressed(KeyEvent keyEvent) {
             // Get the code of the pressed key
             int keyCode = keyEvent.getKeyCode();
@@ -662,6 +643,7 @@ public class Vehicle2 extends JFrame implements ActionListener {
             }
         }
 
+        @Override
         public void keyReleased(KeyEvent keyEvent) {
             int keyCode = keyEvent.getKeyCode();
             this.pressedKey = keyCode;
@@ -894,19 +876,6 @@ public class Vehicle2 extends JFrame implements ActionListener {
             graphics.setColor(this.cColor);
             graphics.fillRect((int) (this.lx - 1.0 - (double) worldParameters.viewportX),
                     (int) (this.ly - 1.0 - (double) worldParameters.viewportY), 3, 3);
-        }
-    }
-
-    class GamePanel extends JPanel implements ActionListener {  // Unfinished code
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            // Your drawing logic here
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
         }
     }
 }
