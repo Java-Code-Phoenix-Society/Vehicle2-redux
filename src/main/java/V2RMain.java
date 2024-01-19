@@ -78,9 +78,17 @@ public class V2RMain extends JFrame {
             if (objV2.runState) {
                 objV2.run();
             } else {
-                objV2.currentLevel++;
-                if (objV2.currentLevel < Vehicle2.maps.size()) {
+                // Stop the timer from running a duplicate loop
+                timer.stop();
+
+                // Capture an issue with level skipping
+                if ((System.currentTimeMillis() - objV2.levelStartTime) < 1000) {
+                    ++objV2.currentLevel;
+                }
+
+                if (objV2.currentLevel < objV2.maps.size()) {
                     objV2.init();
+                    timer.start();
                 } else {
                     gameState = MENU_PANEL;
                     getContentPane().removeAll();
@@ -88,6 +96,7 @@ public class V2RMain extends JFrame {
                 }
             }
         }
+
         if (gameState == MENU_PANEL) {
             if (timer.isRunning()) timer.stop();
         }

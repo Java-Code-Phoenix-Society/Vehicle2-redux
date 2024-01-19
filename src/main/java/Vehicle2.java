@@ -33,7 +33,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
     MediaTracker tracker;
     PlayerVehicle pVehicle;
     WorldParameters worldParameters;
-    public static ArrayList<LevelMap> maps;
+    public ArrayList<LevelMap> maps;
     static HashMap<String, String> levelTimes;
     double lxt = 0.0;
     double lyt = 0.0;
@@ -222,7 +222,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
         // Wait for all images to be loaded
         while (!this.tracker.checkAll()) {
             try {
-                Thread.sleep(100L);
+                Thread.sleep(1L);
             } catch (InterruptedException e) {
                 // Consider logging the exception or handling it appropriately
             }
@@ -507,7 +507,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 }
             }
 
-            this.repaint();
+            //this.repaint();
             //update(this.graphics);
             if (this.worldParameters.delay <= 0) return;
             try {
