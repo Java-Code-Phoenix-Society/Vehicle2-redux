@@ -1,16 +1,19 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
-public class V2RMain extends JFrame {
-    private static Timer timer = null;
-    private final int delay = 10; // Adjust the delay based on your game's requirements (in milliseconds)
-    public static Vehicle2 objV2;
-    private static MenuPanel mp;
+public class V2RMain extends JFrame implements TriggerListener {
     public final static int MENU_PANEL = 0;
     public final static int OPTIONS_PANEL = 1;
     public final static int GAME_PANEL = 2;
     public static int gameState;
+    private static Timer timer = null;
+    private static MenuPanel mp;
+    private final int delay = 10; // Adjust the delay based on your game's requirements (in milliseconds)
+    public Vehicle2 objV2;
+    private int prevLevel;
 
     public V2RMain() {
         setTitle("V2: Redux");
@@ -19,13 +22,13 @@ public class V2RMain extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocation(0, 0);
         setLayout(new BorderLayout());
-
+        prevLevel = -1;
 
         // Initialize game loop
         timer = new Timer(delay, e -> {
             update(); // Method to update game state
         });
-
+        timer.setInitialDelay(20);
         mp = new MenuPanel();
         // Add window listener to handle closing action
         addWindowListener(new WindowListener() {
@@ -72,6 +75,25 @@ public class V2RMain extends JFrame {
         setVisible(true);
     }
 
+    public static void main(String[] args) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        V2RMain v2r = new V2RMain();
+        v2r.objV2 = new Vehicle2();
+
+        v2r.add(mp, BorderLayout.CENTER);
+
+        // Calculate the center position
+        int centerX = (screenSize.width - 800) / 2;
+        int centerY = (screenSize.height - 600) / 2;
+
+        // Set the frame location
+        v2r.setLocation(centerX, centerY);
+
+        v2r.objV2.addEventListener(v2r);
+
+        gameState = MENU_PANEL;
+    }
+
     // Method to update game logic
     private void update() {
         if (gameState == GAME_PANEL) {
@@ -81,14 +103,16 @@ public class V2RMain extends JFrame {
                 // Stop the timer from running a duplicate loop
                 timer.stop();
 
-                // Capture an issue with level skipping
-                if ((System.currentTimeMillis() - objV2.levelStartTime) < 1000) {
+                if (prevLevel < objV2.currentLevel) {
                     ++objV2.currentLevel;
+                    prevLevel++;
                 }
 
                 if (objV2.currentLevel < objV2.maps.size()) {
-                    objV2.init();
-                    timer.start();
+                    if (objV2.gp != objV2.maps.get(objV2.currentLevel).lp) {
+                        objV2.init();
+                        timer.start();
+                    }
                 } else {
                     gameState = MENU_PANEL;
                     getContentPane().removeAll();
@@ -104,31 +128,46 @@ public class V2RMain extends JFrame {
         repaint();
     }
 
-    public static void main(String[] args) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        V2RMain v2r = new V2RMain();
-        objV2 = new Vehicle2();
-
-        v2r.add(mp, BorderLayout.CENTER);
-
-        // Calculate the center position
-        int centerX = (screenSize.width - 800) / 2;
-        int centerY = (screenSize.height - 600) / 2;
-
-        // Set the frame location
-        v2r.setLocation(centerX, centerY);
-
-        gameState = MENU_PANEL;
+    public void startGame() {
+        // Simple protection for no maps
+        if (objV2.maps.size() != 0) {
+            this.getContentPane().removeAll();
+            this.add(objV2);
+            gameState = GAME_PANEL;
+            objV2.init();
+            timer.start();
+        } else {
+            JOptionPane.showMessageDialog(null,
+                    "Can not start the game. There are no map files in the Levels/ directory",
+                    "Error", JOptionPane.ERROR_MESSAGE
+            );
+        }
+        //setUndecorated(true);
+        //revalidate();
     }
 
-    public void startGame() {
-        this.getContentPane().removeAll();
-        this.add(objV2);
-        gameState = GAME_PANEL;
-        //setUndecorated(true);
-        objV2.init();
-        timer.start();
-        //revalidate();
+    /**
+     * @param event incoming event
+     */
+    @Override
+    public void onEventOccurred(TriggerEvent event) {
+        System.out.println("Event occurred: " + event.getMessage());
+        if (event.getMessage().equals("exit_loop")) {
+            if (gameState == MENU_PANEL) {
+                System.exit(0);
+            }
+
+            if (gameState == GAME_PANEL) {
+                timer.stop();
+                gameState = MENU_PANEL;
+                objV2.currentLevel = 0;
+                prevLevel = -1;
+                this.getContentPane().removeAll();
+                this.add(mp);
+            }
+        }
+        revalidate();
+        repaint();
     }
 
     public class MenuPanel extends JPanel {
@@ -154,7 +193,7 @@ public class V2RMain extends JFrame {
             btnStart.setMnemonic(KeyEvent.VK_S);
             btnStart.addActionListener(e -> {
                 startGame();
-                timer.start();
+                //timer.start();
             });
 
             btnOptions = new JButton("Options");
@@ -171,14 +210,4 @@ public class V2RMain extends JFrame {
             add(centeredPanel, gbc);
         }
     }
-    /*
-    // Set up game panel
-        JPanel gamePanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                // Your rendering code goes here
-            }
-        };
-    */
 }

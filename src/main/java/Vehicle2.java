@@ -13,11 +13,12 @@ import java.util.HashMap;
 import java.util.stream.IntStream;
 
 public class Vehicle2 extends JPanel implements ActionListener {
+
     public int currentLevel;
-    public static GameParams gp;
+    public GameParams gp;
     boolean cursorState = false;
     boolean mouseState = false;
-    boolean runState = true;
+    public boolean runState = false;
     boolean shiftPressed = false;
     int gameCounter = 0;
     int graphicsReady = 0;
@@ -38,14 +39,26 @@ public class Vehicle2 extends JPanel implements ActionListener {
     double lxt = 0.0;
     double lyt = 0.0;
     long startTime = System.currentTimeMillis();
-    long delay = 5000; // 5 seconds: Time to stay in the goal
+    private final long delay = 5000; // 5 seconds: Time to stay in the goal
     boolean insideGoal = false;
+    final private ArrayList<TriggerListener> listeners = new ArrayList<>();
 
     public Vehicle2() {
         currentLevel = 0;
         levelTimes = new HashMap<>();
         maps = LevelUtilities.getLevelMaps();
         setSize(800, 600);
+    }
+
+    public void addEventListener(TriggerListener listener) {
+        listeners.add(listener);
+    }
+
+    public void fireEvent(String message) {
+        TriggerEvent event = new TriggerEvent(this, message);
+        for (TriggerListener listener : listeners) {
+            listener.onEventOccurred(event);
+        }
     }
 
     public void paint(Graphics graphics) {
@@ -191,7 +204,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
         }
         this.graphicsReady = 1;
         levelStartTime = System.currentTimeMillis(); // Start the timer
-        runState = true;
+        this.runState = true;
     }
 
     private void processPart(int n, Color color) {
@@ -502,19 +515,20 @@ public class Vehicle2 extends JPanel implements ActionListener {
                     graphics.drawString("Stay inside the goal: " + ((delay - elapsedTime) / 1000), x, y);
                 }
                 if (elapsedTime >= delay) {
-                    runState = false;
+                    this.runState = false;
                     levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
+                    startTime = System.currentTimeMillis();
                 }
             }
 
-            //this.repaint();
+            /*/this.repaint();
             //update(this.graphics);
             if (this.worldParameters.delay <= 0) return;
             try {
                 Thread.sleep(this.worldParameters.delay);
             } catch (InterruptedException interruptedException) {
                 // empty catch block
-            }
+            } */
 
     }
 
@@ -574,17 +588,6 @@ public class Vehicle2 extends JPanel implements ActionListener {
         }
     }
 
-    static class GameConstants {
-        public static int airColor = 0xFFFFFF;
-        public static int waterColor = 11129855;
-        public static int groundColor = 10643504;
-        public static int aColor = 0x828181;
-        public static int bColor = 8023138;
-
-        GameConstants() {
-        }
-    }
-
     class GameControls extends KeyAdapter {
         int pressedKey;
 
@@ -639,7 +642,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
             }
             // Escape to exit the game.
             if (keyCode == KeyEvent.VK_ESCAPE) {
-                System.exit(0);
+                runState = false;
+                fireEvent("exit_loop");
             }
         }
 

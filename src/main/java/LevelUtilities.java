@@ -42,14 +42,14 @@ public class LevelUtilities {
 
         File[] files = file.listFiles();
 
-        assert files != null;
-        for (File curFile : files) {
-            String curName = curFile.getName();
-            if (findIgnoreCase(curName, ".map") != -1 && curFile.isFile()) {
-                list.add(curName);
+        if(files != null) {
+            for (File curFile : files) {
+                String curName = curFile.getName();
+                if (findIgnoreCase(curName, ".map") != -1 && curFile.isFile()) {
+                    list.add(curName);
+                }
             }
         }
-
         return list;
     }
 
