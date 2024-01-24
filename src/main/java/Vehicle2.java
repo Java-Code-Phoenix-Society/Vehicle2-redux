@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.stream.IntStream;
 
 public class Vehicle2 extends JPanel implements ActionListener {
-
     public int currentLevel;
     public GameParams gp;
     boolean cursorState = false;
@@ -520,16 +519,6 @@ public class Vehicle2 extends JPanel implements ActionListener {
                     startTime = System.currentTimeMillis();
                 }
             }
-
-            /*/this.repaint();
-            //update(this.graphics);
-            if (this.worldParameters.delay <= 0) return;
-            try {
-                Thread.sleep(this.worldParameters.delay);
-            } catch (InterruptedException interruptedException) {
-                // empty catch block
-            } */
-
     }
 
     /**
@@ -780,8 +769,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
         double fCorpus;
         double fEngine;
         double v0Rope;
-        int px = 32;
-        int py = 64;
+        int px;
+        int py;
         int np = 0;
         int nf = 0;
         int ropeSlot = 0;

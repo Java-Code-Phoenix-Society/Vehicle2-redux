@@ -4,17 +4,28 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+/**
+ * The main class representing the game application for Vehicle 2: Redux.
+ * Extends JFrame and implements TriggerListener for handling events.
+ */
 public class V2RMain extends JFrame implements TriggerListener {
+    // Constants for the game state
     public final static int MENU_PANEL = 0;
-    public final static int OPTIONS_PANEL = 1;
-    public final static int GAME_PANEL = 2;
+    public final static int GAME_PANEL = 1;
+    public final static int OPTIONS_PANEL = 2;
+
+    // General variables
     public static int gameState;
-    private static Timer timer = null;
-    private static MenuPanel mp;
-    private final int delay = 10; // Adjust the delay based on your game's requirements (in milliseconds)
     public Vehicle2 objV2;
     private int prevLevel;
+    private static Timer timer = null;
+    private static MenuPanel mp;
+    private static LevelSelectPanel lsp;
+    private final int delay = 10;
 
+    /**
+     * Constructs the V2RMain frame for the game.
+     */
     public V2RMain() {
         setTitle("V2: Redux");
         setUndecorated(false);
@@ -30,23 +41,24 @@ public class V2RMain extends JFrame implements TriggerListener {
         });
         timer.setInitialDelay(20);
         mp = new MenuPanel();
+
         // Add window listener to handle closing action
         addWindowListener(new WindowListener() {
             @Override
             public void windowOpened(WindowEvent e) {
-
+                Vehicle2.levelTimes = LevelUtilities.readHashmapFromFile("Level-times.txt");
             }
 
             @Override
             public void windowClosing(WindowEvent e) {
                 // Clean up resources if needed
                 timer.stop(); // Stop the game loop
-                LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, "Level-times.txt");
                 dispose();    // Dispose the JFrame and exit the application
             }
 
             @Override
             public void windowClosed(WindowEvent e) {
+                LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, "Level-times.txt");
                 System.exit(0);
             }
 
@@ -75,12 +87,16 @@ public class V2RMain extends JFrame implements TriggerListener {
         setVisible(true);
     }
 
+    /**
+     * The main method to start the V2RMain application.
+     *
+     * @param args The command-line arguments.
+     */
     public static void main(String[] args) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         V2RMain v2r = new V2RMain();
         v2r.objV2 = new Vehicle2();
-
-        v2r.add(mp, BorderLayout.CENTER);
+        lsp = new LevelSelectPanel(v2r.objV2.maps);
 
         // Calculate the center position
         int centerX = (screenSize.width - 800) / 2;
@@ -90,11 +106,15 @@ public class V2RMain extends JFrame implements TriggerListener {
         v2r.setLocation(centerX, centerY);
 
         v2r.objV2.addEventListener(v2r);
+        v2r.lsp.addEventListener(v2r);
+        v2r.add(mp, BorderLayout.CENTER);
 
         gameState = MENU_PANEL;
+        v2r.revalidate();
+        v2r.repaint();
     }
 
-    // Method to update game logic
+    /** Method to update game logic */
     private void update() {
         if (gameState == GAME_PANEL) {
             if (objV2.runState) {
@@ -103,20 +123,21 @@ public class V2RMain extends JFrame implements TriggerListener {
                 // Stop the timer from running a duplicate loop
                 timer.stop();
 
-                if (prevLevel < objV2.currentLevel) {
-                    ++objV2.currentLevel;
-                    prevLevel++;
+                if (prevLevel != -2) {
+                    if (prevLevel < objV2.currentLevel) {
+                        ++objV2.currentLevel;
+                        prevLevel++;
+                    }
                 }
-
                 if (objV2.currentLevel < objV2.maps.size()) {
                     if (objV2.gp != objV2.maps.get(objV2.currentLevel).lp) {
                         objV2.init();
                         timer.start();
+                    } else {
+                        returnToMenu();
                     }
                 } else {
-                    gameState = MENU_PANEL;
-                    getContentPane().removeAll();
-                    add(mp);
+                    returnToMenu();
                 }
             }
         }
@@ -128,6 +149,17 @@ public class V2RMain extends JFrame implements TriggerListener {
         repaint();
     }
 
+    /** Returns to the main menu.
+    */
+    private void returnToMenu() {
+        gameState = MENU_PANEL;
+        getContentPane().removeAll();
+        add(mp);
+    }
+
+    /**
+     * Initiates the process of starting the game.
+     */
     public void startGame() {
         // Simple protection for no maps
         if (objV2.maps.size() != 0) {
@@ -142,12 +174,11 @@ public class V2RMain extends JFrame implements TriggerListener {
                     "Error", JOptionPane.ERROR_MESSAGE
             );
         }
-        //setUndecorated(true);
-        //revalidate();
     }
 
-    /**
-     * @param event incoming event
+    /** Processes events fired from children.
+     *
+     * @param event Incoming event from trigger
      */
     @Override
     public void onEventOccurred(TriggerEvent event) {
@@ -166,15 +197,50 @@ public class V2RMain extends JFrame implements TriggerListener {
                 this.add(mp);
             }
         }
+        if (event.getMessage().contains("map:")) {
+            String msg = event.getMessage();
+            msg = msg.substring(msg.lastIndexOf(':') + 1);
+
+            System.out.println("Go to map: " + msg);
+            objV2.currentLevel = Integer.parseInt(msg);
+            prevLevel = -2;
+            startGame();
+        }
+
         revalidate();
         repaint();
     }
 
+    /**
+     * Opens the options menu (Temporary the level select menu).
+     */
+    private void openOptions() {
+        // Simple protection for no maps
+        if (objV2.maps.size() != 0) {
+            this.getContentPane().removeAll();
+            this.add(lsp);
+            gameState = OPTIONS_PANEL;
+        } else {
+            JOptionPane.showMessageDialog(null,
+                    "Can not start the game. There are no map files in the Levels/ directory",
+                    "Error", JOptionPane.ERROR_MESSAGE
+            );
+        }
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Represents a panel containing menu buttons for starting, configuring options, and exiting the game.
+     */
     public class MenuPanel extends JPanel {
         JButton btnStart;
         JButton btnExit;
         JButton btnOptions;
 
+        /**
+         * Constructs a MenuPanel with buttons for starting the game, accessing options, and exiting the game.
+         */
         public MenuPanel() {
             // Set up GridBagLayout for the frame
             setLayout(new GridBagLayout());
@@ -191,18 +257,18 @@ public class V2RMain extends JFrame implements TriggerListener {
 
             btnStart = new JButton("Start Game");
             btnStart.setMnemonic(KeyEvent.VK_S);
-            btnStart.addActionListener(e -> {
-                startGame();
-                //timer.start();
-            });
+            btnStart.addActionListener(e -> startGame());
 
-            btnOptions = new JButton("Options");
+            btnOptions = new JButton("Options (LS TEMP)");
             btnOptions.setMnemonic(KeyEvent.VK_O);
-            btnOptions.addActionListener(e -> System.exit(0));
+            btnOptions.addActionListener(e -> openOptions());
 
             btnExit = new JButton("Exit Game");
             btnExit.setMnemonic(KeyEvent.VK_X);
-            btnExit.addActionListener(e -> System.exit(0));
+            btnExit.addActionListener(e -> {
+                LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, "Level-times.txt");
+                System.exit(0);
+            });
 
             centeredPanel.add(btnStart);
             centeredPanel.add(btnOptions);

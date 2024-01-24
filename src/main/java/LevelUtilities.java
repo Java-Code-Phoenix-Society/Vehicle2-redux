@@ -3,7 +3,10 @@ import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for handling levels and maps.
@@ -42,7 +45,7 @@ public class LevelUtilities {
 
         File[] files = file.listFiles();
 
-        if(files != null) {
+        if (files != null) {
             for (File curFile : files) {
                 String curName = curFile.getName();
                 if (findIgnoreCase(curName, ".map") != -1 && curFile.isFile()) {
@@ -141,6 +144,13 @@ public class LevelUtilities {
         System.out.println(test);
     }
 
+    /**
+     * Writes the contents of a HashMap to a file.
+     * This method overwrites the existing content of the file.
+     *
+     * @param map      The HashMap to be written to the file.
+     * @param filename The name of the file to which the HashMap will be written.
+     */
     public static void writeHashmapToFile(HashMap<String, String> map, String filename) {
         RandomAccessFile randomAccessFile;
         try {
@@ -160,6 +170,90 @@ public class LevelUtilities {
             randomAccessFile.close();
         } catch (Exception e) {
             System.err.println("There was an error writing the file in writeHashmapToFile().");
+        }
+    }
+
+    /**
+     * Reads a HashMap<String, String> from a file with key-value pairs in the format "key=value".
+     *
+     * @param filename The name of the file to read.
+     * @return {HashMap<String, String>} The HashMap containing key-value pairs from the file.
+     * If an error occurs during file reading, an empty HashMap is returned.
+     */
+    public static HashMap<String, String> readHashmapFromFile(String filename) {
+        HashMap<String, String> hashMap = new HashMap<>();
+
+        byte[] fileContent;
+        try (RandomAccessFile file = new RandomAccessFile(filename, "r")) {
+            fileContent = new byte[(int) file.length()];
+            file.readFully(fileContent);
+        } catch (Exception e) {
+            return hashMap;
+        }
+
+        String strLength = new String(fileContent);
+        strLength = stringReplaceCaseInsensitive(strLength, "\r", "\n");
+        strLength = stringReplaceCaseInsensitive(strLength, "\n\n", "\n");
+        ArrayList<String> arrayList = breakStringIntoWordsSeparatedByStringCaseInsensitive(strLength, "\n");
+
+        assert arrayList != null;
+        for (String item : arrayList) {
+            ArrayList<String> breakList = breakStringIntoWordsSeparatedByStringCaseInsensitive(item, "=");
+            assert breakList != null;
+            if (breakList.size() == 2) {
+                String key = breakList.get(0).trim();
+                String value = breakList.get(1).trim();
+                hashMap.put(key, value);
+            }
+        }
+        return hashMap;
+    }
+
+    /**
+     * Replaces all occurrences of a specified substring with another string in a given string.
+     *
+     * @param text            The original string.
+     * @param word            The substring to be replaced.
+     * @param replacementChar - The replacement substring.
+     * @return The resulting string after doing replacements.
+     */
+    public static String stringReplaceCaseInsensitive(String text, String word, String replacementChar) {
+        ArrayList<String> arrList = breakStringIntoWordsSeparatedByStringCaseInsensitive(text, word);
+
+        StringBuilder textBuilder = new StringBuilder();
+        for (int i = 0; i < Objects.requireNonNull(arrList).size(); ++i) {
+            textBuilder.append(arrList.get(i));
+            if (i < arrList.size() - 1) {
+                textBuilder.append(replacementChar);
+            }
+        }
+        text = textBuilder.toString();
+
+        return text;
+    }
+
+    /**
+     * Breaks a string into an ArrayList of words separated by a specified substring,
+     * ignoring case during the separation.
+     *
+     * @param text The original string.
+     * @param word The substring used as a separator.
+     * @return An ArrayList of words separated by the specified substring.
+     */
+    public static ArrayList<String> breakStringIntoWordsSeparatedByStringCaseInsensitive(String text, String word) {
+        if (word != null && !word.isEmpty()) {
+            if (text == null) {
+                return null;
+            } else {
+                String regEx = "(?i)" + Pattern.quote(word);
+                String[] splitStr = text.split(regEx);
+
+                return new ArrayList<>(Arrays.asList(splitStr));
+            }
+        } else {
+            ArrayList<String> arrayList = new ArrayList<>(1);
+            arrayList.add(text);
+            return arrayList;
         }
     }
 }
