@@ -1,3 +1,5 @@
+package org.jcps.vehicle2redux;
+
 /**
  * This class holds static constants representing colors used in the game.
  */

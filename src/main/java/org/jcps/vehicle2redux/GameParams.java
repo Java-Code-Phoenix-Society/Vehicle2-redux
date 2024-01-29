@@ -1,9 +1,15 @@
+package org.jcps.vehicle2redux;
+
 import java.util.HashMap;
 
 /**
  * Class to handle the parameters that the original java applet would have got from the HTML page it was on.
+ * Sets up a HashMap and put the level variables and parameters inside.
  */
 public class GameParams {
+    /**
+     * HashMap to hold level variables and parameters
+     */
     public HashMap<String, String> paramMap;
 
     /**

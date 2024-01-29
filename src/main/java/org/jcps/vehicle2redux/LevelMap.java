@@ -1,3 +1,5 @@
+package org.jcps.vehicle2redux;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -6,10 +8,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Represents a level map with key-value pairs stored in a file.
+ * Represents a level map with key-value pairs stored in a {@code .map} file.
  */
 class LevelMap {
+    /**
+     * The file name and path associated with the level.
+     */
     private final String filename;
+    /**
+     * {@code GameParams} object containing the level parameters loaded from a {@code .map} file.
+     * <br>See {@link GameParams}
+     */
     public GameParams lp;
 
     /**
@@ -84,7 +93,7 @@ class LevelMap {
                 }
             }
         } catch (IOException e) {
-            System.out.println("File error: " + e.getMessage());
+            if (V2RMain.DEBUG) System.out.println("File error: " + e.getMessage());
         }
         return hashMap;
     }

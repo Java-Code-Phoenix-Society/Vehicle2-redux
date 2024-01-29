@@ -1,3 +1,5 @@
+package org.jcps.vehicle2redux;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -11,8 +13,17 @@ import java.util.ArrayList;
  */
 public class LevelSelectPanel extends JPanel {
     private static final int BUTTONS_PER_PAGE = 4;
+    /**
+     * Listeners registered with this instance.
+     */
     final private ArrayList<TriggerListener> listeners = new ArrayList<>();
+    /**
+     * Array holding the navigation buttons.
+     */
     ArrayList<JButton> btnLevels;
+    /**
+     * The current page the panel is showing.
+     */
     private int currentPage;
 
     /**
@@ -30,7 +41,7 @@ public class LevelSelectPanel extends JPanel {
             btn.addActionListener(e -> {
                 JButton button = (JButton) e.getSource();
                 String btnText = button.getText();
-                System.out.println("Selected level: " + btnText);
+                if (V2RMain.DEBUG) System.out.println("Selected level: " + btnText);
                 fireEvent("map:" + finalMapIndex);
             });
             btnLevels.add(btn);
@@ -101,7 +112,6 @@ public class LevelSelectPanel extends JPanel {
             button.setVerticalTextPosition(SwingConstants.BOTTOM);
             button.setHorizontalTextPosition(SwingConstants.CENTER);
             button.setText("<html><center>" + description + "</center></html>");
-            //button.setText(description);
         }
 
         return button;
@@ -152,18 +162,24 @@ public class LevelSelectPanel extends JPanel {
 
         // Update the page label and buttons
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton prevButton = new JButton("Previous Page");
+        JButton prevButton = new JButton("<");
         JLabel pageLabel = new JLabel("Page " + (page + 1));
-        JButton nextButton = new JButton("Next Page");
+        JButton nextButton = new JButton(">");
+        JButton exitButton = new JButton("Exit");
+        JButton endButton = new JButton(">|"); // placeholder button
 
+        pageLabel.setSize(100, 20);
         prevButton.addActionListener(e -> navigatePage(-1));
         prevButton.setEnabled(page != 0);
         nextButton.addActionListener(e -> navigatePage(1));
         nextButton.setEnabled(page != totalPages - 1);
+        exitButton.addActionListener(e -> fireEvent("exit_loop"));
 
+        bottomPanel.add(exitButton);
         bottomPanel.add(prevButton);
         bottomPanel.add(pageLabel);
         bottomPanel.add(nextButton);
+        bottomPanel.add(endButton);
 
         // Add the panels to the main panel
         add(bottomPanel, BorderLayout.SOUTH);

@@ -1,3 +1,5 @@
+package org.jcps.vehicle2redux;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URI;
@@ -25,7 +27,7 @@ public class LevelUtilities {
         try {
             urlPath = "file:///" + System.getProperty("user.dir") + File.separator + "Levels";
             url = new URL(urlPath);
-            System.out.println("Loading maps from: " + urlPath);
+            if (V2RMain.DEBUG) System.out.println("Loading maps from: " + urlPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -61,16 +63,16 @@ public class LevelUtilities {
      *
      * @param text     The text to search.
      * @param target   The target string to find.
-     * @param loc      The starting index for the search.
+     * @param index    The starting index for the search.
      * @param caseBool Whether to perform a case-sensitive search.
      * @return The index of the first occurrence of the target string, or -1 if not found.
      */
-    private static int find(String text, String target, int loc, boolean caseBool) {
+    private static int find(String text, String target, int index, boolean caseBool) {
         String firstChar = target.substring(0, 1);
         int targetLen = target.length();
         int textLen = text.length();
-        if (loc >= -1) {
-            for (int i = loc; i < textLen - targetLen + 1; ++i) {
+        if (index >= -1) {
+            for (int i = index; i < textLen - targetLen + 1; ++i) {
                 String substring = text.substring(i, i + 1);
                 boolean checked = false;
                 if (caseBool) {
@@ -116,9 +118,9 @@ public class LevelUtilities {
     public static ArrayList<LevelMap> getLevelMaps() {
         ArrayList<String> files = getLevelList();
         ArrayList<LevelMap> maps = new ArrayList<>();
-        System.out.println("Map Files Loaded:");
+        if (V2RMain.DEBUG) System.out.println("Map Files Loaded:");
         for (Object s : files) {
-            System.out.println(s);
+            if (V2RMain.DEBUG) System.out.println(s);
             LevelMap map = new LevelMap("Levels/" + s);
             maps.add(map);
         }
@@ -132,7 +134,7 @@ public class LevelUtilities {
      */
     public static void main(String[] args) {
         ArrayList<LevelMap> maps = getLevelMaps();
-        System.out.println("Complete");
+        if (V2RMain.DEBUG) System.out.println("Complete");
         String test = null;
         String exceptionList = "";
         try {
@@ -140,8 +142,10 @@ public class LevelUtilities {
         } catch (Exception e) {
             exceptionList += e;
         }
-        System.out.println(exceptionList);
-        System.out.println(test);
+        if (V2RMain.DEBUG) {
+            System.out.println(exceptionList);
+            System.out.println(test);
+        }
     }
 
     /**
@@ -174,10 +178,10 @@ public class LevelUtilities {
     }
 
     /**
-     * Reads a HashMap<String, String> from a file with key-value pairs in the format "key=value".
+     * Reads a {@code HashMap<String, String>} from a file with key-value pairs in the format "key=value".
      *
      * @param filename The name of the file to read.
-     * @return {HashMap<String, String>} The HashMap containing key-value pairs from the file.
+     * @return {@code HashMap<String, String>} The HashMap containing key-value pairs from the file.
      * If an error occurs during file reading, an empty HashMap is returned.
      */
     public static HashMap<String, String> readHashmapFromFile(String filename) {
