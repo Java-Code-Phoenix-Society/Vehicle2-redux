@@ -14,151 +14,125 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.IntStream;
 
+import static java.lang.Integer.parseInt;
+
 /**
  * Represents the main panel for the Vehicle2 game functions and implements ActionListener for event handling.
  */
 public class Vehicle2 extends JPanel implements ActionListener {
     // Fields
-
-    /**
-     * The current level in the game.
-     */
-    public int currentLevel;
-
-    /**
-     * The game parameters object containing various settings.
-     */
-    public GameParams gp;
-
-    /**
-     * Represents the state of the cursor.
-     */
-    boolean cursorState = false;
-
-    /**
-     * Represents the state of the mouse.
-     */
-    boolean mouseState = false;
-
-    /**
-     * Represents the run state of the game.
-     */
-    public boolean runState = false;
-
-    /**
-     * Represents the state of the Shift key.
-     */
-    boolean shiftPressed = false;
-
-    /**
-     * A counter for game events.
-     */
-    int gameCounter = 0;
-
-    /**
-     * Indicates the readiness of graphics.
-     */
-    int graphicsReady = 0;
-
-    /**
-     * The width of the screen.
-     */
-    int screenWidth;
-
-    /**
-     * The height of the screen.
-     */
-    int screenHeight;
-
-    /**
-     * The x-coordinate of the mouse.
-     */
-    int mouseX = 0;
-
-    /**
-     * The y-coordinate of the mouse.
-     */
-    int mouseY = 0;
-
-    /**
-     * The start time of the current level.
-     */
-    long levelStartTime;
-
-    /**
-     * The graphics object for rendering.
-     */
-    Graphics graphics;
-
-    /**
-     * The background image.
-     */
-    Image imgBG;
-
-    /**
-     * The screen buffer image.
-     */
-    Image screenBuffer;
-
-    /**
-     * The tile image.
-     */
-    Image tileImg;
-
-    /**
-     * The media tracker for loading images.
-     */
-    MediaTracker tracker;
-
-    /**
-     * The player vehicle object.
-     */
-    PlayerVehicle pVehicle;
-
-    /**
-     * The world parameters object.
-     */
-    WorldParameters worldParameters;
-
-    /**
-     * The list of level maps containing level information.
-     */
-    public ArrayList<LevelMap> maps;
-
     /**
      * Static map of level times stored as key-value pairs.
      */
     static HashMap<String, String> levelTimes;
-
-    /**
-     * The x-coordinate of the level time.
-     */
-    double lxt = 0.0;
-
-    /**
-     * The y-coordinate of the level time.
-     */
-    double lyt = 0.0;
-
-    /**
-     * The start time of the game instance.
-     */
-    long startTime = System.currentTimeMillis();
-
     /**
      * The delay time for staying in the goal state (in milliseconds).
      */
     private final long delay = 5000; // 5 seconds: Time to stay in the goal
-
-    /**
-     * Represents whether the vehicle is inside the goal.
-     */
-    boolean insideGoal = false;
-
     /**
      * The list of TriggerListeners for handling game events.
      */
     final private ArrayList<TriggerListener> listeners = new ArrayList<>();
+    /**
+     * The current level in the game.
+     */
+    public int currentLevel;
+    /**
+     * The game parameters object containing various settings.
+     */
+    public GameParams gp;
+    /**
+     * Represents the run state of the game.
+     */
+    public boolean runState = false;
+    /**
+     * The list of level maps containing level information.
+     */
+    public ArrayList<LevelMap> maps;
+    /**
+     * Represents the state of the cursor.
+     */
+    boolean cursorState = false;
+    /**
+     * Represents the state of the mouse.
+     */
+    boolean mouseState = false;
+    /**
+     * Represents the state of the Shift key.
+     */
+    boolean shiftPressed = false;
+    /**
+     * A counter for game events.
+     */
+    int gameCounter = 0;
+    /**
+     * Indicates the readiness of graphics.
+     */
+    int graphicsReady = 0;
+    /**
+     * The width of the screen.
+     */
+    int screenWidth;
+    /**
+     * The height of the screen.
+     */
+    int screenHeight;
+    /**
+     * The x-coordinate of the mouse.
+     */
+    int mouseX = 0;
+    /**
+     * The y-coordinate of the mouse.
+     */
+    int mouseY = 0;
+    /**
+     * The start time of the current level.
+     */
+    long levelStartTime;
+    /**
+     * The graphics object for rendering.
+     */
+    Graphics graphics;
+    /**
+     * The background image.
+     */
+    Image imgBG;
+    /**
+     * The screen buffer image.
+     */
+    Image screenBuffer;
+    /**
+     * The tile image.
+     */
+    Image tileImg;
+    /**
+     * The media tracker for loading images.
+     */
+    MediaTracker tracker;
+    /**
+     * The player vehicle object.
+     */
+    PlayerVehicle pVehicle;
+    /**
+     * The world parameters object.
+     */
+    WorldParameters worldParameters;
+    /**
+     * The x-coordinate of the level time.
+     */
+    double lxt = 0.0;
+    /**
+     * The y-coordinate of the level time.
+     */
+    double lyt = 0.0;
+    /**
+     * The start time of the game instance.
+     */
+    long startTime = System.currentTimeMillis();
+    /**
+     * Represents whether the vehicle is inside the goal.
+     */
+    boolean insideGoal = false;
 
 
     /**
@@ -738,7 +712,10 @@ public class Vehicle2 extends JPanel implements ActionListener {
             }
             if (elapsedTime >= delay) {
                 this.runState = false;
-                levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
+                int storedTime = parseInt(levelTimes.get(gp.paramMap.get("Bild")));
+                if (levelTime < storedTime) {
+                    levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
+                }
                 startTime = System.currentTimeMillis();
             }
         }

@@ -39,46 +39,38 @@ public class V2RMain extends JFrame implements TriggerListener {
      * The current game state.
      */
     public static int gameState;
-
-    /**
-     * The main Vehicle2 instance for the game.
-     */
-    public Vehicle2 vehicle2r;
-
-    /**
-     * The previous level in the game.
-     */
-    private int prevLevel;
-
-    /**
-     * The Timer instance for handling game events.
-     */
-    private static Timer timer = null;
-
-    /**
-     * The MenuPanel instance for the main menu.
-     */
-    private final MenuPanel mp;
-
-    /**
-     * The LevelSelectPanel instance for level selection.
-     */
-    private LevelSelectPanel levelSelectPanel;
-
-    /**
-     * The OptionsPanel instance for managing the game options.
-     */
-    private final OptionsPanel optionsPanel;
-
-    /**
-     * The delay interval for the timer (in milliseconds).
-     */
-    private final int delay = 10;
-
     /**
      * Static debug flag. Set to true to show debugging information.
      */
     public static boolean DEBUG = true;
+    /**
+     * The Timer instance for handling game events.
+     */
+    private static Timer timer = null;
+    /**
+     * The MenuPanel instance for the main menu.
+     */
+    private final MenuPanel mp;
+    /**
+     * The OptionsPanel instance for managing the game options.
+     */
+    private final OptionsPanel optionsPanel;
+    /**
+     * The delay interval for the timer (in milliseconds).
+     */
+    private final int delay = 10;
+    /**
+     * The main Vehicle2 instance for the game.
+     */
+    public Vehicle2 vehicle2r;
+    /**
+     * The previous level in the game.
+     */
+    private int prevLevel;
+    /**
+     * The LevelSelectPanel instance for level selection.
+     */
+    private LevelSelectPanel levelSelectPanel;
 
     /**
      * Constructs the V2RMain frame for the game.

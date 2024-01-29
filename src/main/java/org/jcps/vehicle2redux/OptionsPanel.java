@@ -9,6 +9,10 @@ import java.util.ArrayList;
  */
 public class OptionsPanel extends JPanel {
     /**
+     * Listeners registered with this instance.
+     */
+    final private ArrayList<TriggerListener> listeners = new ArrayList<>();
+    /**
      * Title JLabel
      */
     private JLabel titleLabel;
@@ -24,10 +28,6 @@ public class OptionsPanel extends JPanel {
      * Button to exit the options.
      */
     private JButton btnMenu;
-    /**
-     * Listeners registered with this instance.
-     */
-    final private ArrayList<TriggerListener> listeners = new ArrayList<>();
 
     /**
      * Creates the options panel
@@ -54,14 +54,14 @@ public class OptionsPanel extends JPanel {
         btnMenu = new JButton("Return to menu");
         btnMenu.addActionListener(e -> returnToMenu());
 
-        add(titleLabel,gbc);
-        add(lblBlank,gbc);
-        add(new JLabel("Enable Sound:"),gbc);
-        add(soundCheckBox,gbc);
-        add(new JLabel("Difficulty Level:"),gbc);
-        add(difficultyComboBox,gbc);
-        add(new JLabel(),gbc); // Empty label for spacing
-        add(btnMenu,gbc);
+        add(titleLabel, gbc);
+        add(lblBlank, gbc);
+        add(new JLabel("Enable Sound:"), gbc);
+        add(soundCheckBox, gbc);
+        add(new JLabel("Difficulty Level:"), gbc);
+        add(difficultyComboBox, gbc);
+        add(new JLabel(), gbc); // Empty label for spacing
+        add(btnMenu, gbc);
     }
 
     /**
