@@ -33,6 +33,8 @@ public class V2RMain extends JFrame implements TriggerListener {
      */
     public final static int SELECT_PANEL = 3;
 
+    public final static int BEST_TIMES = 4;
+
     // General variables
 
     /**
@@ -55,6 +57,8 @@ public class V2RMain extends JFrame implements TriggerListener {
      * The OptionsPanel instance for managing the game options.
      */
     private final OptionsPanel optionsPanel;
+
+    private BestTimesPanel btp;
     /**
      * The delay interval for the timer (in milliseconds).
      */
@@ -148,6 +152,7 @@ public class V2RMain extends JFrame implements TriggerListener {
         V2RMain v2r = new V2RMain();
         v2r.vehicle2r = new Vehicle2();
         v2r.levelSelectPanel = new LevelSelectPanel(v2r.vehicle2r.maps);
+        v2r.btp = new BestTimesPanel();
 
         // Calculate the center position
         int centerX = (screenSize.width - 800) / 2;
@@ -159,6 +164,7 @@ public class V2RMain extends JFrame implements TriggerListener {
         v2r.vehicle2r.addEventListener(v2r);
         v2r.levelSelectPanel.addEventListener(v2r);
         v2r.optionsPanel.addEventListener(v2r);
+        v2r.btp.addEventListener(v2r);
         v2r.add(v2r.mp, BorderLayout.CENTER);
 
         gameState = MENU_PANEL;
@@ -243,7 +249,7 @@ public class V2RMain extends JFrame implements TriggerListener {
             if (gameState == MENU_PANEL) {
                 System.exit(0);
             }
-            if (gameState == OPTIONS_PANEL || gameState == SELECT_PANEL) {
+            if (gameState == OPTIONS_PANEL || gameState == SELECT_PANEL || gameState == BEST_TIMES) {
                 timer.stop();
                 gameState = MENU_PANEL;
                 this.getContentPane().removeAll();
@@ -257,6 +263,13 @@ public class V2RMain extends JFrame implements TriggerListener {
                 this.getContentPane().removeAll();
                 this.add(this.mp);
             }
+        }
+        if (event.getMessage().contains("gotoBestTimes")) {
+            gameState = BEST_TIMES;
+            this.getContentPane().removeAll();
+            this.btp = new BestTimesPanel();
+            this.btp.addEventListener(this);
+            this.add(this.btp);
         }
         if (event.getMessage().contains("map:")) {
             String msg = event.getMessage();

@@ -15,19 +15,24 @@ public class OptionsPanel extends JPanel {
     /**
      * Title JLabel
      */
-    private JLabel titleLabel;
+    private final JLabel titleLabel;
     /**
      * Checkbox to an option
      */
-    private JCheckBox soundCheckBox;
+    private final JCheckBox soundCheckBox;
     /**
      * Difficulty combo box
      */
-    private JComboBox<String> difficultyComboBox;
+    private final JComboBox<String> difficultyComboBox;
     /**
      * Button to exit the options.
      */
-    private JButton btnMenu;
+    private final JButton btnMenu;
+
+    /**
+     * Button to go to the best times.
+     */
+    private final JButton btnBTPanel;
 
     /**
      * Creates the options panel
@@ -53,6 +58,8 @@ public class OptionsPanel extends JPanel {
         soundCheckBox = new JCheckBox();
         btnMenu = new JButton("Return to menu");
         btnMenu.addActionListener(e -> returnToMenu());
+        btnBTPanel = new JButton("Best Times");
+        btnBTPanel.addActionListener(e -> goBestTimes());
 
         add(titleLabel, gbc);
         add(lblBlank, gbc);
@@ -60,8 +67,12 @@ public class OptionsPanel extends JPanel {
         add(soundCheckBox, gbc);
         add(new JLabel("Difficulty Level:"), gbc);
         add(difficultyComboBox, gbc);
-        add(new JLabel(), gbc); // Empty label for spacing
+        add(btnBTPanel, gbc); // Empty label for spacing
         add(btnMenu, gbc);
+    }
+
+    private void goBestTimes() {
+        fireEvent("gotoBestTimes");
     }
 
     /**

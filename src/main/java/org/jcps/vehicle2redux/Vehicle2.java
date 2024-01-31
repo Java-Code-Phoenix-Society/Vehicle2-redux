@@ -11,7 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.stream.IntStream;
 
 import static java.lang.Integer.parseInt;
@@ -24,7 +24,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * Static map of level times stored as key-value pairs.
      */
-    static HashMap<String, String> levelTimes;
+    static LinkedHashMap<String, String> levelTimes;
     /**
      * The delay time for staying in the goal state (in milliseconds).
      */
@@ -142,7 +142,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
      */
     public Vehicle2() {
         currentLevel = 0; // Set the initial level to 0
-        levelTimes = new HashMap<>(); // Initialize the levelTimes HashMap
+        levelTimes = new LinkedHashMap<>(); // Initialize the levelTimes HashMap
         maps = LevelUtilities.getLevelMaps(); // Retrieve level maps using LevelUtilities and set the maps variable
         setSize(800, 600); // Set the default size of the Vehicle2 object to 800x600 pixels
     }
@@ -712,7 +712,12 @@ public class Vehicle2 extends JPanel implements ActionListener {
             }
             if (elapsedTime >= delay) {
                 this.runState = false;
-                int storedTime = parseInt(levelTimes.get(gp.paramMap.get("Bild")));
+                int storedTime = 9999;
+                try {
+                    storedTime = parseInt(levelTimes.get(gp.paramMap.get("Bild")));
+                } catch (Exception e) {
+                    if (V2RMain.DEBUG) System.out.println("No stored time..");
+                }
                 if (levelTime < storedTime) {
                     levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
                 }

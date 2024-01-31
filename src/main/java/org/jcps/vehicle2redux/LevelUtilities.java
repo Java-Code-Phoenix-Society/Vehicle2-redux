@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -184,8 +181,8 @@ public class LevelUtilities {
      * @return {@code HashMap<String, String>} The HashMap containing key-value pairs from the file.
      * If an error occurs during file reading, an empty HashMap is returned.
      */
-    public static HashMap<String, String> readHashmapFromFile(String filename) {
-        HashMap<String, String> hashMap = new HashMap<>();
+    public static LinkedHashMap<String, String> readHashmapFromFile(String filename) {
+        LinkedHashMap<String, String> hashMap = new LinkedHashMap<>();
 
         byte[] fileContent;
         try (RandomAccessFile file = new RandomAccessFile(filename, "r")) {
