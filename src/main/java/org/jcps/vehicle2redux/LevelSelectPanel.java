@@ -9,27 +9,49 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Represents a panel for selecting levels in a game.
+ * The {@code LevelSelectPanel} class represents a custom JPanel for selecting a game level to play.
+ * It presents a grid of buttons, each corresponding to a level, with the associated art image.
+ * <p>
+ * Users can navigate through multiple pages of levels and interact with the game by selecting a level to play.
+ * The panel emits events based on the user's level selection, which can be captured by registered {@code TriggerListeners}.
+ * </p>
+ * <p>
+ * <i>Note: The layout, appearance, and behaviour of this panel are customised to suit the requirements of the game.</i>
+ * </p>
+ *
+ * @see javax.swing.JPanel
+ * @see TriggerListener
+ * @since 1.0
  */
 public class LevelSelectPanel extends JPanel {
+    /**
+     * A constant representing the number of level buttons to be displayed per page.
+     */
     private static final int BUTTONS_PER_PAGE = 4;
     /**
-     * Listeners registered with this instance.
+     * A list of {@code TriggerListeners} registered with this panel. These listeners will be notified
+     * when certain events occur within this panel.
+     *
+     * @see TriggerListener
      */
     final private ArrayList<TriggerListener> listeners = new ArrayList<>();
     /**
-     * Array holding the navigation buttons.
+     * A list of {@code JButtons} representing the levels. Each button corresponds to a level and shows an associated image.
+     *
+     * @see javax.swing.JButton
      */
     ArrayList<JButton> btnLevels;
     /**
-     * The current page the panel is showing.
+     * The current page number being displayed by the panel. This value changes as the user navigates through the level pages.
      */
     private int currentPage;
 
     /**
-     * Constructs a LevelSelectPanel with a list of LevelMap objects.
+     * Constructs a {@code LevelSelectPanel} object and populates it with level buttons based on the provided list of {@code LevelMaps}.
+     * The panel is initially set to display the first page of level buttons.
      *
-     * @param maps A list of LevelMap objects containing level information.
+     * @param maps A list of {@code LevelMap} objects, each containing information about a game level.
+     * @see LevelMap
      */
     public LevelSelectPanel(ArrayList<LevelMap> maps) {
         btnLevels = new ArrayList<>();
@@ -55,11 +77,12 @@ public class LevelSelectPanel extends JPanel {
     }
 
     /**
-     * Scales the dimensions of the original image while preserving aspect ratio.
+     * Calculates and returns the new dimensions of an image when scaled to fit within a 200x200 pixel area
+     * while preserving the original aspect ratio.
      *
      * @param originalWidth  The original width of the image.
      * @param originalHeight The original height of the image.
-     * @return An array containing the new width and height after scaling.
+     * @return An array containing the new width and height of the image after scaling.
      */
     private static int[] scaleImage(int originalWidth, int originalHeight) {
         int newWidth;
@@ -80,10 +103,12 @@ public class LevelSelectPanel extends JPanel {
     }
 
     /**
-     * Creates a JButton with an image from the specified file path.
+     * Creates a level selection {@code JButton} with an associated image read from the specified file path.
+     * The button's text is set to the name of the image file (without the extension).
      *
-     * @param imagePath The path to the image file.
-     * @return The created JButton with the scaled image.
+     * @param imagePath The path to the image file to be displayed on the button.
+     * @return A {@code JButton} with the scaled image and text.
+     * @see javax.swing.JButton
      */
     private JButton createImageButton(String imagePath) {
         JButton button = new JButton();
@@ -118,9 +143,12 @@ public class LevelSelectPanel extends JPanel {
     }
 
     /**
-     * Fires a TriggerEvent to all registered TriggerListeners.
+     * Triggers a {@code TriggerEvent} to all registered {@code TriggerListeners}. The event carries a message
+     * that is used by the listeners to determine the appropriate action in response to the event.
      *
-     * @param message The message associated with the event.
+     * @param message The message associated with the event, typically conveying information about the event's cause or context.
+     * @see TriggerListener
+     * @see TriggerEvent
      */
     public void fireEvent(String message) {
         TriggerEvent event = new TriggerEvent(this, message);
@@ -130,18 +158,21 @@ public class LevelSelectPanel extends JPanel {
     }
 
     /**
-     * Adds a TriggerListener to the list of event listeners.
+     * Adds a {@code TriggerListener} to this panel's list of event listeners. These listeners are notified
+     * when certain events occur within this panel, such as a level selection.
      *
-     * @param listener The TriggerListener to be added.
+     * @param listener The {@code TriggerListener} to be added.
+     * @see TriggerListener
      */
     public void addEventListener(TriggerListener listener) {
         listeners.add(listener);
     }
 
     /**
-     * Updates the displayed buttons for the specified page.
+     * Updates the level buttons displayed on the panel to correspond to the specified page number.
+     * The method removes any existing buttons, adds the buttons for the new page, and updates the page navigation controls.
      *
-     * @param page The page number to display.
+     * @param page The page number of the level buttons to be displayed.
      */
     private void updateButtonsForPage(int page) {
         removeAll(); // Clear the existing components
@@ -189,7 +220,8 @@ public class LevelSelectPanel extends JPanel {
     }
 
     /**
-     * Navigates to the previous or next page based on the specified delta.
+     * Changes the displayed page of level buttons by a specified delta.
+     * A positive delta navigates to subsequent pages, while a negative delta navigates to previous pages.
      *
      * @param delta The change in page number (negative for previous, positive for next).
      */

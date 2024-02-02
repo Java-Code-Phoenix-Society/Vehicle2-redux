@@ -8,23 +8,37 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Represents a level map with key-value pairs stored in a {@code .map} file.
+ * The {@code LevelMap} class encapsulates the map of a specific game level, stored in a {@code .map} file.
+ * It provides methods to read, write, and manipulate the level parameters.
+ * <p>
+ * The map is represented as a collection of key-value pairs, where each pair corresponds to a specific
+ * parameter of the level. The parameters include various characteristics and settings of the game level.
+ * </p>
+ * <p>
+ * <i>Note: Changes made to the map parameters are directly written to the associated {@code .map} file.</i>
+ * </p>
+ *
+ * @author neoFuzz
+ * @since 1.0
  */
-class LevelMap {
+public class LevelMap {
     /**
-     * The file name and path associated with the level.
+     * The name and path of the file storing the level map data.
      */
     private final String filename;
     /**
-     * {@code GameParams} object containing the level parameters loaded from a {@code .map} file.
-     * <br>See {@link GameParams}
+     * A {@code GameParams} object that holds the level parameters loaded from the {@code .map} file.
+     * These parameters can be accessed and modified through this object.
+     *
+     * @see GameParams
      */
     public GameParams lp;
 
     /**
-     * Constructor for the LevelMap class.
+     * Constructs a {@code LevelMap} object based on the specified filename. It initiates a read operation
+     * to load the level parameters from the file into a {@code GameParams} object.
      *
-     * @param filename The name of the file containing the level map data.
+     * @param filename The name and path of the file containing the level map data.
      */
     public LevelMap(String filename) {
         this.filename = filename;
@@ -32,13 +46,14 @@ class LevelMap {
     }
 
     /**
-     * Retrieves the value associated with the specified key.
+     * Retrieves the filename associated with the {@code LevelMap}. This filename represents the
+     * {@code .map} file where the level parameters are stored.
      *
-     * @param value The key whose associated value is to be retrieved.
-     * @return The value associated with the specified key.
+     * @param key The key with which the specified value is to be associated.
+     * @return The name and path of the file associated with the {@code LevelMap}.
      */
-    public String get(String value) {
-        return this.lp.paramMap.get(value);
+    public String get(String key) {
+        return this.lp.paramMap.get(key);
     }
 
     /**
@@ -62,9 +77,9 @@ class LevelMap {
     }
 
     /**
-     * Retrieves the filename associated with the LevelMap.
+     * Retrieves the filename associated with the {@code LevelMap}.
      *
-     * @return The filename associated with the LevelMap.
+     * @return The filename associated with the {@code LevelMap}.
      */
     public String getFilename() {
         return this.filename;
@@ -73,7 +88,9 @@ class LevelMap {
     // Private methods
 
     /**
-     * Reads key-value pairs from the file and populates the HashMap.
+     * Reads key-value pairs from the file and populates the {@code HashMap}.
+     *
+     * @return A {@code HashMap} containing key-value pairs read from the file.
      */
     private HashMap<String, String> readHashtableFromFile() {
         HashMap<String, String> hashMap = new HashMap<>();
@@ -99,7 +116,7 @@ class LevelMap {
     }
 
     /**
-     * Writes the current HashMap to the file.
+     * Writes the current {@code HashMap} to the file.
      */
     private void writeHashmapToFile() {
         RandomAccessFile randomAccessFile;

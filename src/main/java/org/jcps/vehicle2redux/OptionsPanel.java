@@ -5,37 +5,45 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * OptionsPanel class that contains the JPanel setup to show the Game options.
+ * The {@code OptionsPanel} class extends a {@link JPanel} to create a customised panel for the game's options settings.
+ * This panel includes interactive components such as checkboxes, combo boxes, and buttons that allow the user to configure various game settings.
+ * Events are generated when the user interacts with these components, which are then handled by registered {@code TriggerListener}s.
+ *
+ * @see javax.swing.JPanel
+ * @see TriggerListener
  */
 public class OptionsPanel extends JPanel {
     /**
-     * Listeners registered with this instance.
+     * A list of {@code TriggerListeners} that are registered with this {@code OptionsPanel} instance.
+     * These listeners are notified of events that occur within this panel, such as changes to game options or navigation requests.
+     *
+     * @see TriggerListener
      */
     final private ArrayList<TriggerListener> listeners = new ArrayList<>();
     /**
-     * Title JLabel
+     * A label displaying the title of the options panel.
      */
     private final JLabel titleLabel;
     /**
-     * Checkbox to an option
+     * Checkbox for enabling/disabling a game option.
      */
     private final JCheckBox soundCheckBox;
     /**
-     * Difficulty combo box
+     * Difficulty combo box example
      */
     private final JComboBox<String> difficultyComboBox;
     /**
-     * Button to exit the options.
+     * A button that, when clicked, triggers an event to navigate back to the game's main menu.
      */
     private final JButton btnMenu;
-
     /**
-     * Button to go to the best times.
+     * A button that, when clicked, triggers an event to navigate to the 'Best Times' panel.
      */
     private final JButton btnBTPanel;
 
     /**
-     * Creates the options panel
+     * Constructs a new {@code OptionsPanel} with a pre-defined layout and components.
+     * The components are added to the panel using a {@link GridBagLayout} for flexible positioning and sizing.
      */
     public OptionsPanel() {
         // Set layout for the panel
@@ -50,16 +58,16 @@ public class OptionsPanel extends JPanel {
         // Create and add components
         titleLabel = new JLabel("<html><div style='text-align: center;border: 2px solid black;'>Game Options</div></html>");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-//        titleLabel.setPreferredSize(new Dimension(400,80));
-        String[] difficultyLevels = {"Easy", "Medium", "Hard"};
-        difficultyComboBox = new JComboBox<>(difficultyLevels);
         JLabel lblBlank = new JLabel(" ");
         lblBlank.setFont(new Font("Arial", Font.BOLD, 18));
-        soundCheckBox = new JCheckBox();
         btnMenu = new JButton("Return to menu");
         btnMenu.addActionListener(e -> returnToMenu());
         btnBTPanel = new JButton("Best Times");
         btnBTPanel.addActionListener(e -> goBestTimes());
+
+        String[] difficultyLevels = {"Easy", "Medium", "Hard"};
+        difficultyComboBox = new JComboBox<>(difficultyLevels);
+        soundCheckBox = new JCheckBox();
 
         add(titleLabel, gbc);
         add(lblBlank, gbc);
@@ -71,21 +79,28 @@ public class OptionsPanel extends JPanel {
         add(btnMenu, gbc);
     }
 
+    /**
+     * Triggers the 'gotoBestTimes' event to navigate to the 'Best Times' panel.
+     * This method should be called when a user wants to navigate to the 'Best Times' page.
+     */
     private void goBestTimes() {
         fireEvent("gotoBestTimes");
     }
 
     /**
-     * Fire event to return to the main menu.
+     * Triggers an 'exit_loop' event to return to the main menu.
+     * This method should be called when a user wants to return to the main menu.
      */
     private void returnToMenu() {
         fireEvent("exit_loop");
     }
 
     /**
-     * Fires a TriggerEvent to all registered TriggerListeners.
+     * Fires a {@code TriggerEvent} to all registered {@code TriggerListeners}. Each listener will handle the event based on the provided message.
      *
-     * @param message The message associated with the event.
+     * @param message The message associated with the event. This message will dictate how the event is handled by the listeners.
+     * @see TriggerEvent
+     * @see TriggerListener
      */
     public void fireEvent(String message) {
         TriggerEvent event = new TriggerEvent(this, message);
@@ -95,9 +110,11 @@ public class OptionsPanel extends JPanel {
     }
 
     /**
-     * Adds a TriggerListener to the list of event listeners.
+     * Adds a new {@code TriggerListener} to the list of event listeners for this {@code OptionsPanel}.
+     * The added listener will then listen for and handle any future events that are fired from this panel.
      *
-     * @param listener The TriggerListener to be added.
+     * @param listener The {@code TriggerListener} to be added.
+     * @see TriggerListener
      */
     public void addEventListener(TriggerListener listener) {
         listeners.add(listener);

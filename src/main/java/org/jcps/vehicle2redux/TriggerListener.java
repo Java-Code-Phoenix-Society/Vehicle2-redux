@@ -10,9 +10,9 @@ import java.util.EventListener;
 public interface TriggerListener extends EventListener {
 
     /**
-     * Called when a trigger event occurs.
+     * Invoked upon the occurrence of a trigger event.
      *
-     * @param event The TriggerEvent associated with the occurred event.
+     * @param event The TriggerEvent associated with the event in question.
      */
     void onEventOccurred(TriggerEvent event);
 }

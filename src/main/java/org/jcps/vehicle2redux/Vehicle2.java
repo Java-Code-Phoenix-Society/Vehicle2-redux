@@ -192,9 +192,9 @@ public class Vehicle2 extends JPanel implements ActionListener {
         gp = maps.get(currentLevel).lp;
 
         // Initialize variables for positioning and dimensions
-        int n, p = 43, c = 83;
-        int n2 = 40, n3;
-        double d2 = 0.0, d3 = 0.0;
+        int partIndex, wheelOffset = 43, corpusOffset = 83;
+        int ropeSegmentOffset = 40, axisOffset;
+        double axisPosition = 0.0, corpusPosition = 0.0;
 
         // Get the dimensions of the screen
         screenWidth = this.getSize().width;
@@ -206,7 +206,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
 
         // Initialize game objects
         worldParameters = new WorldParameters();
-        pVehicle = new PlayerVehicle(p, c);
+        pVehicle = new PlayerVehicle(wheelOffset, corpusOffset);
         tracker = new MediaTracker(this);
 
         // Load tile image
@@ -227,109 +227,109 @@ public class Vehicle2 extends JPanel implements ActionListener {
         Color redColor = new Color(255, 0, 0);
 
         // Create vehicle parts and connectors
-        for (n3 = 0; n3 < 2; n3++) {
-            double d4 = d2 + (n3 * 80);
-            for (n = 0; n < pVehicle.maxRopeSegments; n++) {
-                double d5 = Math.PI * (n / 5.0);
-                this.pVehicle.partList[this.pVehicle.np] =
-                        new Connector(d4 + (double) n2 * Math.cos(d5),
-                                d3 + (double) n2 * Math.sin(d5),
+        for (axisOffset = 0; axisOffset < 2; axisOffset++) {
+            double xPartOffset = axisPosition + (axisOffset * 80);
+            for (partIndex = 0; partIndex < pVehicle.maxRopeSegments; partIndex++) {
+                double angleIncrement = Math.PI * (partIndex / 5.0);
+                this.pVehicle.partList[this.pVehicle.bodyPart] =
+                        new Connector(xPartOffset + (double) ropeSegmentOffset * Math.cos(angleIncrement),
+                                corpusPosition + (double) ropeSegmentOffset * Math.sin(angleIncrement),
                                 this.pVehicle.mWheels * this.worldParameters.scaleM, greenColor);
-                ++this.pVehicle.np;
+                ++this.pVehicle.bodyPart;
             }
-            n = 0;
-            while (n < pVehicle.maxRopeSegments) {
-                this.pVehicle.vParts[this.pVehicle.nf] =
-                        new VehiclePart(n + 11 * n3, (n + 1) % pVehicle.maxRopeSegments + 11 * n3,
+            partIndex = 0;
+            while (partIndex < pVehicle.maxRopeSegments) {
+                this.pVehicle.vParts[this.pVehicle.ropePart] =
+                        new VehiclePart(partIndex + 11 * axisOffset, (partIndex + 1) % pVehicle.maxRopeSegments + 11 * axisOffset,
                                 this.worldParameters.scaleF * this.pVehicle.fWheels, orangeColor);
-                ++this.pVehicle.nf;
-                this.pVehicle.vParts[this.pVehicle.nf] =
-                        new VehiclePart(n + 11 * n3, (n + 3) % pVehicle.maxRopeSegments + 11 * n3,
+                ++this.pVehicle.ropePart;
+                this.pVehicle.vParts[this.pVehicle.ropePart] =
+                        new VehiclePart(partIndex + 11 * axisOffset, (partIndex + 3) % pVehicle.maxRopeSegments + 11 * axisOffset,
                                 this.worldParameters.scaleF * this.pVehicle.fWheels, orangeColor);
-                ++this.pVehicle.nf;
-                ++n;
+                ++this.pVehicle.ropePart;
+                ++partIndex;
             }
-            this.pVehicle.partList[this.pVehicle.np] =
-                    new Connector(d4, d3, this.worldParameters.scaleM * this.pVehicle.mAxis,
+            this.pVehicle.partList[this.pVehicle.bodyPart] =
+                    new Connector(xPartOffset, corpusPosition, this.worldParameters.scaleM * this.pVehicle.mAxis,
                             greenColor);
-            ++this.pVehicle.np;
-            n = 0;
-            while (n < pVehicle.maxRopeSegments) {
-                this.pVehicle.vParts[this.pVehicle.nf] =
-                        new VehiclePart(n + 11 * n3, this.pVehicle.np - 1,
+            ++this.pVehicle.bodyPart;
+            partIndex = 0;
+            while (partIndex < pVehicle.maxRopeSegments) {
+                this.pVehicle.vParts[this.pVehicle.ropePart] =
+                        new VehiclePart(partIndex + 11 * axisOffset, this.pVehicle.bodyPart - 1,
                                 this.worldParameters.scaleF * this.pVehicle.fWheels, orangeColor);
-                ++this.pVehicle.nf;
-                ++n;
+                ++this.pVehicle.ropePart;
+                ++partIndex;
             }
 
         }
-        this.pVehicle.partList[this.pVehicle.np] =
-                new Connector(d2 + 40.0, d3, this.worldParameters.scaleM * this.pVehicle.mCorpus,
+        this.pVehicle.partList[this.pVehicle.bodyPart] =
+                new Connector(axisPosition + 40.0, corpusPosition, this.worldParameters.scaleM * this.pVehicle.mCorpus,
                         greenColor);
-        ++this.pVehicle.np;
-        this.pVehicle.pCounter = this.pVehicle.np - 1;
-        this.pVehicle.vParts[this.pVehicle.nf] =
-                new VehiclePart(10, this.pVehicle.np - 1,
+        ++this.pVehicle.bodyPart;
+        this.pVehicle.pCounter = this.pVehicle.bodyPart - 1;
+        this.pVehicle.vParts[this.pVehicle.ropePart] =
+                new VehiclePart(10, this.pVehicle.bodyPart - 1,
                         this.worldParameters.scaleF * this.pVehicle.fCorpus, redColor);
-        ++this.pVehicle.nf;
-        this.pVehicle.vParts[this.pVehicle.nf] =
-                new VehiclePart(21, this.pVehicle.np - 1,
+        ++this.pVehicle.ropePart;
+        this.pVehicle.vParts[this.pVehicle.ropePart] =
+                new VehiclePart(21, this.pVehicle.bodyPart - 1,
                         this.worldParameters.scaleF * this.pVehicle.fCorpus, redColor);
-        ++this.pVehicle.nf;
-        this.pVehicle.vParts[this.pVehicle.nf] =
+        ++this.pVehicle.ropePart;
+        this.pVehicle.vParts[this.pVehicle.ropePart] =
                 new VehiclePart(10, 21, this.worldParameters.scaleF * this.pVehicle.fCorpus, redColor);
-        this.pVehicle.ropeSegments[0] = this.pVehicle.np;
-        this.pVehicle.ropeAnchor[0] = ++this.pVehicle.nf;
+        this.pVehicle.ropeSegments[0] = this.pVehicle.bodyPart;
+        this.pVehicle.ropeAnchor[0] = ++this.pVehicle.ropePart;
 
         // Adjust positions and scales
-        n = 0;
-        while (n < this.pVehicle.maxRopeSegments) {
-            processPart(n, greenColor);
-            this.pVehicle.vParts[this.pVehicle.nf] = n == 0 ?
+        partIndex = 0;
+        while (partIndex < this.pVehicle.maxRopeSegments) {
+            processPart(partIndex, greenColor);
+            this.pVehicle.vParts[this.pVehicle.ropePart] = partIndex == 0 ?
                     new VehiclePart(22, this.pVehicle.ropeSegments[0], this.pVehicle.ropeMin,
                             new Color(0, 80, 185)) :
-                    new VehiclePart(this.pVehicle.ropeSegments[0] + n - 1, this.pVehicle.ropeSegments[0] + n,
+                    new VehiclePart(this.pVehicle.ropeSegments[0] + partIndex - 1, this.pVehicle.ropeSegments[0] + partIndex,
                             this.pVehicle.ropeMin, new Color(0, 80, 185));
 
-            this.pVehicle.vParts[this.pVehicle.nf].sag = this.worldParameters.scaleSize *
+            this.pVehicle.vParts[this.pVehicle.ropePart].sag = this.worldParameters.scaleSize *
                     (double) gp.getInt("l0Rope");
-            this.pVehicle.vParts[this.pVehicle.nf].partActive = false;
-            ++this.pVehicle.nf;
-            ++n;
+            this.pVehicle.vParts[this.pVehicle.ropePart].partActive = false;
+            ++this.pVehicle.ropePart;
+            ++partIndex;
         }
-        this.pVehicle.ropeSegments[1] = this.pVehicle.np;
-        this.pVehicle.ropeAnchor[1] = this.pVehicle.nf;
-        n = 0;
-        while (n < this.pVehicle.maxRopeSegments) {
-            processPart(n, greenColor);
-            this.pVehicle.vParts[this.pVehicle.nf] = n == 0 ?
+        this.pVehicle.ropeSegments[1] = this.pVehicle.bodyPart;
+        this.pVehicle.ropeAnchor[1] = this.pVehicle.ropePart;
+        partIndex = 0;
+        while (partIndex < this.pVehicle.maxRopeSegments) {
+            processPart(partIndex, greenColor);
+            this.pVehicle.vParts[this.pVehicle.ropePart] = partIndex == 0 ?
                     new VehiclePart(22, this.pVehicle.ropeSegments[1],
                             this.pVehicle.ropeMin, new Color(70, 170, 255)) :
-                    new VehiclePart(this.pVehicle.ropeSegments[1] + n - 1, this.pVehicle.ropeSegments[1] + n,
+                    new VehiclePart(this.pVehicle.ropeSegments[1] + partIndex - 1, this.pVehicle.ropeSegments[1] + partIndex,
                             this.pVehicle.ropeMin, new Color(70, 170, 255));
-            this.pVehicle.vParts[this.pVehicle.nf].sag = this.worldParameters.scaleSize *
+            this.pVehicle.vParts[this.pVehicle.ropePart].sag = this.worldParameters.scaleSize *
                     (double) gp.getInt("l0Rope");
-            this.pVehicle.vParts[this.pVehicle.nf].partActive = false;
-            ++this.pVehicle.nf;
-            ++n;
+            this.pVehicle.vParts[this.pVehicle.ropePart].partActive = false;
+            ++this.pVehicle.ropePart;
+            ++partIndex;
         }
-        n = 0;
-        while (n < this.pVehicle.np) {
-            this.pVehicle.partList[n].x *= this.worldParameters.scaleSize;
-            this.pVehicle.partList[n].y *= this.worldParameters.scaleSize;
-            this.pVehicle.partList[n].x += gp.getInt("StartX");
-            this.pVehicle.partList[n].y += gp.getInt("StartY");
-            ++n;
+        partIndex = 0;
+        while (partIndex < this.pVehicle.bodyPart) {
+            this.pVehicle.partList[partIndex].x *= this.worldParameters.scaleSize;
+            this.pVehicle.partList[partIndex].y *= this.worldParameters.scaleSize;
+            this.pVehicle.partList[partIndex].x += gp.getInt("StartX");
+            this.pVehicle.partList[partIndex].y += gp.getInt("StartY");
+            ++partIndex;
         }
-        n = 0;
-        while (n < this.pVehicle.nf) {
-            this.pVehicle.vParts[n].sag *= this.worldParameters.scaleSize;
-            ++n;
+        partIndex = 0;
+        while (partIndex < this.pVehicle.ropePart) {
+            this.pVehicle.vParts[partIndex].sag *= this.worldParameters.scaleSize;
+            ++partIndex;
         }
 
         // Print map information
         if (V2RMain.DEBUG)
-            System.out.println("Map: " + gp.paramMap.get("Bild_c") + ", nf=" + this.pVehicle.nf + ", np=" + this.pVehicle.np);
+            System.out.println("Map: " + gp.paramMap.get("Bild_c") + ", nf=" + this.pVehicle.ropePart + ", np=" + this.pVehicle.bodyPart);
 
         // Set the initial position of the game world
         this.worldParameters.wpX = this.pVehicle.partList[this.pVehicle.pCounter].x - ((double) this.screenWidth / 2);
@@ -351,17 +351,17 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * Processes a vehicle part and updates the part list with a new Connector.
      *
-     * @param n     The index of the vehicle part.
+     * @param coOrd Starting co-ordinate.
      * @param color The color of the vehicle part.
      */
-    private void processPart(int n, Color color) {
-        this.pVehicle.partList[this.pVehicle.np] =
-                new Connector(n, n, this.pVehicle.mRope * this.worldParameters.scaleM, color);
-        if (n == this.pVehicle.maxRopeSegments - 1) {
-            this.pVehicle.partList[this.pVehicle.np].angle = this.worldParameters.scaleM * this.pVehicle.mHook;
+    private void processPart(int coOrd, Color color) {
+        this.pVehicle.partList[this.pVehicle.bodyPart] =
+                new Connector(coOrd, coOrd, this.pVehicle.mRope * this.worldParameters.scaleM, color);
+        if (coOrd == this.pVehicle.maxRopeSegments - 1) {
+            this.pVehicle.partList[this.pVehicle.bodyPart].angle = this.worldParameters.scaleM * this.pVehicle.mHook;
         }
-        this.pVehicle.partList[this.pVehicle.np].gToggle = false;
-        ++this.pVehicle.np;
+        this.pVehicle.partList[this.pVehicle.bodyPart].gToggle = false;
+        ++this.pVehicle.bodyPart;
     }
 
     /**
@@ -450,15 +450,15 @@ public class Vehicle2 extends JPanel implements ActionListener {
      */
     private char mapPixelToChar(int red, int green, int blue) {
         int pixelValue = (red << 16) | (green << 8) | blue;
-        if (pixelValue == GameConstants.airColor) {
+        if (pixelValue == GameConstants.AIR_COLOR) {
             return 'l';
-        } else if (pixelValue == GameConstants.waterColor) {
+        } else if (pixelValue == GameConstants.WATER_COLOR) {
             return 'w';
-        } else if (pixelValue == GameConstants.groundColor) {
+        } else if (pixelValue == GameConstants.GROUND_COLOR) {
             return 'e';
-        } else if (pixelValue == GameConstants.aColor) {
+        } else if (pixelValue == GameConstants.ELEMENT_A) {
             return 'f';
-        } else if (pixelValue == GameConstants.bColor) {
+        } else if (pixelValue == GameConstants.ELEMENT_B) {
             return 'E';
         }
         return 'F';
@@ -604,7 +604,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
             }
         }
         n = 0;
-        while (n < this.pVehicle.nf) {
+        while (n < this.pVehicle.ropePart) {
             if (this.pVehicle.vParts[n].partActive) {
                 double d6 = this.pVehicle.partList[this.pVehicle.vParts[n].x].x -
                         this.pVehicle.partList[this.pVehicle.vParts[n].y].x;
@@ -622,7 +622,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
             ++n;
         }
         n = 0;
-        while (n < this.pVehicle.np) {
+        while (n < this.pVehicle.bodyPart) {
             if (this.pVehicle.partList[n].gToggle) {
                 char c2;
                 if (this.worldParameters.checkPosition((int) this.pVehicle.partList[n].x,
@@ -1053,8 +1053,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
         double v0Rope;
         int px;
         int py;
-        int np = 0;
-        int nf = 0;
+        int bodyPart = 0;
+        int ropePart = 0;
         int ropeSlot = 0; // Current selected rope slot.
         int[] ropeSegments = new int[2];
         int[] ropeAnchor = new int[2];

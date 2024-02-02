@@ -7,11 +7,12 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * {@code BestTimesPanel} class represents a JPanel for displaying the best times
- * achieved in the game for different levels.
+ * The {@code BestTimesPanel} class is a custom {@link JPanel} that displays the best game times achieved
+ * for different levels in the <i>Vehicle 2: Redux</i> game. It contains a title, a table for displaying level times,
+ * and a button to return to the main menu. This class has dependencies on the {@link Vehicle2} class for level times
+ * and the {@link TriggerListener} interface for event handling.
  * <p>
- * This panel includes a title, a table displaying level times, and a button
- * to return to the main menu.
+ * This panel is intended to be used as a part of the game's GUI, providing players with a summary of their best times.
  * </p>
  *
  * @author neoFuzz
@@ -19,22 +20,30 @@ import java.util.ArrayList;
  */
 public class BestTimesPanel extends JPanel {
     /**
-     * Listeners registered with this instance.
+     * A collection of {@code TriggerListener} objects. These listeners are notified when specific events occur within this panel.
+     * This mechanism allows other components to respond to changes or events that take place within this panel.
+     *
+     * @see TriggerListener
      */
     final private ArrayList<TriggerListener> listeners = new ArrayList<>();
 
     /**
-     * Title JLabel
+     * A JLabel that displays the title of this panel.
+     *
+     * @see javax.swing.JLabel
      */
     private final JLabel titleLabel;
 
     /**
-     * Button to exit the best times panel and return to the main menu.
+     * A JButton that, when clicked, triggers an event to exit the best times panel and return to the main menu.
+     *
+     * @see javax.swing.JButton
      */
     private final JButton btnMenu;
 
     /**
-     * Creates a new instance of the {@code BestTimesPanel}.
+     * Constructs a new instance of the {@code BestTimesPanel}, setting up the layout, title label, table for level times,
+     * and the return button. It initialises the event listeners and populates the table with level times data from the {@link Vehicle2} class.
      */
     public BestTimesPanel() {
         // Set layout and GridBagConstraints
@@ -110,10 +119,11 @@ public class BestTimesPanel extends JPanel {
     }
 
     /**
-     * Formats the time from seconds to a human-readable format (e.g., "2m 30s").
+     * Converts a time value from seconds into a human-readable format, e.g., "2m 30s".
      *
-     * @param time The time in seconds.
-     * @return The formatted time string.
+     * @param time The time value in seconds to be formatted.
+     * @return A string representing the formatted time.
+     * @throws IllegalArgumentException if the input time is negative.
      */
     public static String formatTime(String time) {
         int seconds = -1;
@@ -139,16 +149,28 @@ public class BestTimesPanel extends JPanel {
     }
 
     /**
-     * Fire event to return to the main menu.
+     * Fires a {@link TriggerEvent} to all registered {@code TriggerListeners}, signalling an intent to return to the main menu.
+     * This method is invoked when the 'Return to menu' button is clicked.
+     *
+     * @see TriggerListener
      */
     private void returnToMenu() {
         fireEvent("exit_loop");
     }
 
     /**
-     * Fires a {@code TriggerEvent} to all registered {@code TriggerListeners}.
+     * Fires a {@link TriggerEvent} to all registered {@code TriggerListeners}. This method allows this
+     * panel to communicate with other components of the application, triggering actions in response to events
+     * such as returning to the main menu.
      *
-     * @param message The message associated with the event.
+     * <p>
+     * <i>Note: This method does not guarantee that the event will be successfully processed by all listeners. Listeners
+     * should be implemented in such a way that they can gracefully handle any issues that may arise during event processing.</i>
+     * </p>
+     *
+     * @param message The message associated with the event, which can be used by listeners to determine the
+     *                appropriate action to take.
+     * @see TriggerListener
      */
     public void fireEvent(String message) {
         TriggerEvent event = new TriggerEvent(this, message);
@@ -158,7 +180,8 @@ public class BestTimesPanel extends JPanel {
     }
 
     /**
-     * Adds a {@code TriggerListener} to the list of event listeners.
+     * Adds a {@link TriggerListener} to the list of event listeners.
+     * These listeners will be notified when certain events occur within this panel.
      *
      * @param listener The {@code TriggerListener} to be added.
      */

@@ -8,13 +8,18 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Utility class for handling levels and maps.
+ * A utility class providing static methods for handling levels and maps.
+ * This class contains methods for retrieving level filenames, finding string indices,
+ * reading and writing {@code HashMap<String, String>} to and from files, and string manipulations.
+ *
+ * @since 1.0
  */
 public class LevelUtilities {
     /**
-     * Retrieves a list of level filenames from the "Levels" directory.
+     * Retrieves a list of level filenames present in the "Levels" directory of the game's root folder.
+     * This method helps in dynamically loading the level files available in the game.
      *
-     * @return ArrayList of level filenames.
+     * @return An {@code ArrayList} containing the filenames of all level files found in the "Levels" directory.
      */
     private static ArrayList<String> getLevelList() {
         ArrayList<String> list = new ArrayList<>();
@@ -56,13 +61,14 @@ public class LevelUtilities {
     }
 
     /**
-     * Finds the index of the first occurrence of the target string in the given text.
+     * Searches for the index of the first occurrence of a target string within a text string, starting from a specified index.
+     * The search can be performed in a case-sensitive or case-insensitive manner based on the provided boolean flag.
      *
-     * @param text     The text to search.
-     * @param target   The target string to find.
-     * @param index    The starting index for the search.
-     * @param caseBool Whether to perform a case-sensitive search.
-     * @return The index of the first occurrence of the target string, or -1 if not found.
+     * @param text     The text within which the search is performed.
+     * @param target   The target string to search for within the text.
+     * @param index    The starting index of the search.
+     * @param caseBool A boolean flag indicating whether the search should be case-sensitive (true) or case-insensitive (false).
+     * @return The index of the first occurrence of the target string within the text, or -1 if the target is not found.
      */
     private static int find(String text, String target, int index, boolean caseBool) {
         String firstChar = target.substring(0, 1);
@@ -97,20 +103,21 @@ public class LevelUtilities {
     }
 
     /**
-     * Finds the index of the first occurrence of the target string in the given text, ignoring case.
+     * Performs a case-insensitive search for the first occurrence of a target string within a text string.
+     * This method is a shorthand for invoking find(text, target, 0, true).
      *
-     * @param text   The text to search.
-     * @param target The target string to find.
-     * @return The index of the first occurrence of the target string, or -1 if not found.
+     * @param text   The text within which the search is performed.
+     * @param target The target string to search for within the text.
+     * @return The index of the first occurrence of the target string within the text, or -1 if the target is not found.
      */
     public static int findIgnoreCase(String text, String target) {
         return find(text, target, 0, true);
     }
 
     /**
-     * Retrieves an ArrayList of LevelMap objects based on the level files in the "Levels" directory.
+     * Retrieves an {@code ArrayList} of {@code LevelMap} objects based on the level files in the "Levels" directory.
      *
-     * @return ArrayList of LevelMap objects.
+     * @return an {@code ArrayList} of {@code LevelMap} objects; the list might be empty if no level files are found in the directory.
      */
     public static ArrayList<LevelMap> getLevelMaps() {
         ArrayList<String> files = getLevelList();
@@ -125,7 +132,9 @@ public class LevelUtilities {
     }
 
     /**
-     * Main method for testing LevelUtilities functionality.
+     * Main method for testing the functionality provided by the {@code LevelUtilities} class.
+     * It retrieves a list of {@code LevelMap} objects, prints "Complete" to the console, and then attempts to retrieve and print
+     * the "Bild" attribute of the first {@code LevelMap} in the list.
      *
      * @param args Command line arguments (not used).
      */
@@ -146,11 +155,11 @@ public class LevelUtilities {
     }
 
     /**
-     * Writes the contents of a HashMap to a file.
-     * This method overwrites the existing content of the file.
+     * Writes the key-value pairs of a {@code HashMap} to a file. Each pair is written in the format "key=value".
+     * If the file already exists, it is overwritten; if it does not exist, it is created.
      *
-     * @param map      The HashMap to be written to the file.
-     * @param filename The name of the file to which the HashMap will be written.
+     * @param map      The {@code HashMap} whose contents will be written to the file.
+     * @param filename The name of the file to which the {@code HashMap} will be written.
      */
     public static void writeHashmapToFile(HashMap<String, String> map, String filename) {
         RandomAccessFile randomAccessFile;
@@ -175,11 +184,12 @@ public class LevelUtilities {
     }
 
     /**
-     * Reads a {@code HashMap<String, String>} from a file with key-value pairs in the format "key=value".
+     * Reads a file and returns a {@code LinkedHashMap} containing the key-value pairs found in the file.
+     * Each pair is expected to be in the format "key=value".
      *
      * @param filename The name of the file to read.
-     * @return {@code HashMap<String, String>} The HashMap containing key-value pairs from the file.
-     * If an error occurs during file reading, an empty HashMap is returned.
+     * @return A {@code LinkedHashMap} containing the key-value pairs read from the file.
+     * If an error occurs during reading, an empty {@code LinkedHashMap} is returned.
      */
     public static LinkedHashMap<String, String> readHashmapFromFile(String filename) {
         LinkedHashMap<String, String> hashMap = new LinkedHashMap<>();
@@ -211,12 +221,12 @@ public class LevelUtilities {
     }
 
     /**
-     * Replaces all occurrences of a specified substring with another string in a given string.
+     * Replaces all case-insensitive occurrences of a specified word in a text string with a replacement string.
      *
-     * @param text            The original string.
-     * @param word            The substring to be replaced.
-     * @param replacementChar - The replacement substring.
-     * @return The resulting string after doing replacements.
+     * @param text            The original text string.
+     * @param word            The word to be replaced.
+     * @param replacementChar The replacement string.
+     * @return The resulting string after performing the replacement.
      */
     public static String stringReplaceCaseInsensitive(String text, String word, String replacementChar) {
         ArrayList<String> arrList = breakStringIntoWordsSeparatedByStringCaseInsensitive(text, word);
@@ -234,12 +244,14 @@ public class LevelUtilities {
     }
 
     /**
-     * Breaks a string into an ArrayList of words separated by a specified substring,
-     * ignoring case during the separation.
+     * Breaks a text string into an {@code ArrayList} of words separated by a specified word.
+     * The separation operation is case-insensitive.
      *
-     * @param text The original string.
-     * @param word The substring used as a separator.
-     * @return An ArrayList of words separated by the specified substring.
+     * @param text The original text string.
+     * @param word The word used as a separator to split the text string.
+     * @return An {@code ArrayList} of words separated by the specified word.
+     * If the original text string is null, returns null.
+     * If the word is null or empty, returns an {@code ArrayList} containing the original text string.
      */
     public static ArrayList<String> breakStringIntoWordsSeparatedByStringCaseInsensitive(String text, String word) {
         if (word != null && !word.isEmpty()) {
