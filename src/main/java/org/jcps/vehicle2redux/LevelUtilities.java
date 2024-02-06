@@ -29,7 +29,7 @@ public class LevelUtilities {
         try {
             urlPath = "file:///" + System.getProperty("user.dir") + File.separator + "Levels";
             url = new URL(urlPath);
-            if (V2RMain.DEBUG) System.out.println("Loading maps from: " + urlPath);
+            if (V2RApp.DEBUG) System.out.println("Loading maps from: " + urlPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -122,9 +122,9 @@ public class LevelUtilities {
     public static ArrayList<LevelMap> getLevelMaps() {
         ArrayList<String> files = getLevelList();
         ArrayList<LevelMap> maps = new ArrayList<>();
-        if (V2RMain.DEBUG) System.out.println("Map Files Loaded:");
+        if (V2RApp.DEBUG) System.out.println("Map Files Loaded:");
         for (Object s : files) {
-            if (V2RMain.DEBUG) System.out.println(s);
+            if (V2RApp.DEBUG) System.out.println(s);
             LevelMap map = new LevelMap("Levels/" + s);
             maps.add(map);
         }
@@ -140,7 +140,7 @@ public class LevelUtilities {
      */
     public static void main(String[] args) {
         ArrayList<LevelMap> maps = getLevelMaps();
-        if (V2RMain.DEBUG) System.out.println("Complete");
+        if (V2RApp.DEBUG) System.out.println("Complete");
         String test = null;
         String exceptionList = "";
         try {
@@ -148,7 +148,7 @@ public class LevelUtilities {
         } catch (Exception e) {
             exceptionList += e;
         }
-        if (V2RMain.DEBUG) {
+        if (V2RApp.DEBUG) {
             System.out.println(exceptionList);
             System.out.println(test);
         }

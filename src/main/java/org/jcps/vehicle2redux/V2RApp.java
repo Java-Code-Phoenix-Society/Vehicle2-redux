@@ -13,7 +13,7 @@ import java.awt.event.WindowListener;
  *
  * @author neoFuzz
  */
-public class V2RMain extends JFrame implements TriggerListener {
+public class V2RApp extends JFrame implements TriggerListener {
     // Constants for the game state
     /**
      * Represents the game state when at the main menu panel.
@@ -88,11 +88,11 @@ public class V2RMain extends JFrame implements TriggerListener {
     private LevelSelectPanel levelSelectPanel;
 
     /**
-     * Constructs the V2RMain frame for the game. Sets up the game window with specified properties,
+     * Constructs the V2RApp frame for the game. Sets up the game window with specified properties,
      * initialises the game loop, and adds window listeners to handle the opening and closing actions.
      * The frame is then made visible.
      */
-    public V2RMain() {
+    public V2RApp() {
         setTitle("V2: Redux");
         setUndecorated(true);
         setSize(800, 600);
@@ -156,8 +156,8 @@ public class V2RMain extends JFrame implements TriggerListener {
     }
 
     /**
-     * The main entry point for the V2RMain application.
-     * It creates an instance of the V2RMain class, initialises the game, and sets up the game's UI.
+     * The main entry point for the V2RApp application.
+     * It creates an instance of the V2RApp class, initialises the game, and sets up the game's UI.
      * It also calculates the center position of the screen to position the game window, adds event listeners to the game components,
      * and starts the game loop. The game state is initially set to MENU_PANEL.
      *
@@ -165,7 +165,7 @@ public class V2RMain extends JFrame implements TriggerListener {
      */
     public static void main(String[] args) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        V2RMain v2r = new V2RMain();
+        V2RApp v2r = new V2RApp();
         v2r.vehicle2r = new Vehicle2();
         v2r.levelSelectPanel = new LevelSelectPanel(v2r.vehicle2r.maps);
         v2r.btp = new BestTimesPanel();
@@ -254,6 +254,7 @@ public class V2RMain extends JFrame implements TriggerListener {
             gameState = GAME_PANEL;
             vehicle2r.init();
             timer.start();
+            this.requestFocusInWindow();
         } else {
             JOptionPane.showMessageDialog(null,
                     "Can not start the game. There are no map files in the Levels/ directory",

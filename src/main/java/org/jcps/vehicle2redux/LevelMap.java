@@ -110,7 +110,7 @@ public class LevelMap {
                 }
             }
         } catch (IOException e) {
-            if (V2RMain.DEBUG) System.out.println("File error: " + e.getMessage());
+            if (V2RApp.DEBUG) System.out.println("File error: " + e.getMessage());
         }
         return hashMap;
     }

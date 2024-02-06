@@ -78,7 +78,7 @@ public class GameParams {
      */
     GameParams(HashMap<String, String> hashMap) {
         paramMap = new GameParams().paramMap;
-        if (hashMap.isEmpty() && V2RMain.DEBUG) {
+        if (hashMap.isEmpty() && V2RApp.DEBUG) {
             System.out.println("GameParam Error! defaults will be used.");
         } else {
             paramMap.put("Bild_w", hashMap.get("Bild_w"));

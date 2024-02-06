@@ -63,7 +63,7 @@ public class LevelSelectPanel extends JPanel {
             btn.addActionListener(e -> {
                 JButton button = (JButton) e.getSource();
                 String btnText = button.getText();
-                if (V2RMain.DEBUG) System.out.println("Selected level: " + btnText);
+                if (V2RApp.DEBUG) System.out.println("Selected level: " + btnText);
                 fireEvent("map:" + finalMapIndex);
             });
             btnLevels.add(btn);

@@ -34,7 +34,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.jcps.vehicle2redux.V2RMain</mainClass>
+                            <mainClass>org.jcps.vehicle2redux.V2RApp</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

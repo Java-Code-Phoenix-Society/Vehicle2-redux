@@ -328,7 +328,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
         }
 
         // Print map information
-        if (V2RMain.DEBUG)
+        if (V2RApp.DEBUG)
             System.out.println("Map: " + gp.paramMap.get("Bild_c") + ", nf=" + this.pVehicle.ropePart + ", np=" + this.pVehicle.bodyPart);
 
         // Set the initial position of the game world
@@ -716,7 +716,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 try {
                     storedTime = parseInt(levelTimes.get(gp.paramMap.get("Bild")));
                 } catch (Exception e) {
-                    if (V2RMain.DEBUG) System.out.println("No stored time..");
+                    if (V2RApp.DEBUG) System.out.println("No stored time..");
                 }
                 if (levelTime < storedTime) {
                     levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
