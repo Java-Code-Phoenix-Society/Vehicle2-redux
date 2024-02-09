@@ -132,11 +132,14 @@ public class LevelSelectPanel extends JPanel {
             description = imagePath.substring(startIndex, endIndex);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            if (V2RApp.DEBUG) {
+                System.err.println("Error loading image: " + imagePath + e.getMessage());
+            }
         } finally {
             button.setVerticalTextPosition(SwingConstants.BOTTOM);
             button.setHorizontalTextPosition(SwingConstants.CENTER);
             button.setText("<html><center>" + description + "</center></html>");
+            button.setToolTipText(description);
         }
 
         return button;
@@ -202,9 +205,15 @@ public class LevelSelectPanel extends JPanel {
         pageLabel.setSize(100, 20);
         prevButton.addActionListener(e -> navigatePage(-1));
         prevButton.setEnabled(page != 0);
+        prevButton.setToolTipText("Go to previous page");
         nextButton.addActionListener(e -> navigatePage(1));
         nextButton.setEnabled(page != totalPages - 1);
+        nextButton.setToolTipText("Go to next page");
         exitButton.addActionListener(e -> fireEvent("exit_loop"));
+        exitButton.setToolTipText("Exit to main menu");
+        endButton.addActionListener(e -> navigatePage(totalPages - 1));
+        endButton.setEnabled(page != totalPages - 1);
+        endButton.setToolTipText("Go to last page");
 
         bottomPanel.add(exitButton);
         bottomPanel.add(prevButton);

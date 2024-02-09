@@ -4,8 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
 /**
  * The main class representing the game application for Vehicle 2: Redux.
@@ -111,7 +111,7 @@ public class V2RApp extends JFrame implements TriggerListener {
         this.optionsPanel = new OptionsPanel();
 
         // Add window listener to handle closing action
-        addWindowListener(new WindowListener() {
+        addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
                 Vehicle2.levelTimes = LevelUtilities.readHashmapFromFile("Level-times.txt");
@@ -128,26 +128,6 @@ public class V2RApp extends JFrame implements TriggerListener {
             public void windowClosed(WindowEvent e) {
                 LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, "Level-times.txt");
                 System.exit(0);
-            }
-
-            @Override
-            public void windowIconified(WindowEvent e) {
-
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-
-            }
-
-            @Override
-            public void windowActivated(WindowEvent e) {
-
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent e) {
-
             }
         });
 
@@ -248,7 +228,7 @@ public class V2RApp extends JFrame implements TriggerListener {
      */
     public void startGame() {
         // Simple protection for no maps
-        if (vehicle2r.maps.size() != 0) {
+        if (!vehicle2r.maps.isEmpty()) {
             this.getContentPane().removeAll();
             this.add(vehicle2r);
             gameState = GAME_PANEL;
@@ -336,7 +316,7 @@ public class V2RApp extends JFrame implements TriggerListener {
      */
     private void openLevelSelect() {
         // Simple protection for no maps
-        if (vehicle2r.maps.size() != 0) {
+        if (!vehicle2r.maps.isEmpty()) {
             this.getContentPane().removeAll();
             this.add(this.levelSelectPanel);
             gameState = SELECT_PANEL;

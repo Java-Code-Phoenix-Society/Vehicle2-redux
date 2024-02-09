@@ -202,7 +202,7 @@ public class LevelUtilities {
             return hashMap;
         }
 
-        String strLength = new String(fileContent);
+        String strLength = Arrays.toString(fileContent);
         strLength = stringReplaceCaseInsensitive(strLength, "\r", "\n");
         strLength = stringReplaceCaseInsensitive(strLength, "\n\n", "\n");
         ArrayList<String> arrayList = breakStringIntoWordsSeparatedByStringCaseInsensitive(strLength, "\n");

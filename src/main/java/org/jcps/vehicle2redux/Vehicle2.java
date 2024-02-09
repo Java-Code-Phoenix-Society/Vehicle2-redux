@@ -389,16 +389,15 @@ public class Vehicle2 extends JPanel implements ActionListener {
             pixelGrabber.grabPixels();
         } catch (InterruptedException e) {
             System.err.println("Interrupted waiting for pixels!");
+            Thread.currentThread().interrupt();
             return;
         }
 
         // Wait for all images to be loaded
-        while (!this.tracker.checkAll()) {
-            try {
-                Thread.sleep(1L);
-            } catch (InterruptedException e) {
-                // Consider logging the exception or handling it appropriately
-            }
+        try {
+            tracker.waitForAll();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
 
         // Use parallel stream for processing the pixels
@@ -766,7 +765,9 @@ public class Vehicle2 extends JPanel implements ActionListener {
             try {
                 imgBuffer = ImageIO.read(imageFile);
             } catch (IOException e) {
-                e.printStackTrace();
+                if (V2RApp.DEBUG) {
+                    System.out.println("Image not found!" + e.getMessage());
+                }
             }
         } else {
             System.err.println("Image not found!");
@@ -787,7 +788,9 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 // Opens the specified URL in the default web browser.
                 Desktop.getDesktop().browse(url.toURI());
             } catch (IOException | URISyntaxException e) {
-                e.printStackTrace();
+                if (V2RApp.DEBUG) {
+                    System.out.println("Error opening URL in browser: " + e.getMessage());
+                }
             }
         } else {
             // Desktop not supported, handle this case if needed
