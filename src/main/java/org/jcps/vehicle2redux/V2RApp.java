@@ -130,6 +130,7 @@ public class V2RApp extends JFrame implements TriggerListener {
                 System.exit(0);
             }
         });
+        centerWindow(800);
 
         // Make the frame visible
         setVisible(true);
@@ -144,18 +145,10 @@ public class V2RApp extends JFrame implements TriggerListener {
      * @param args The command-line arguments.
      */
     public static void main(String[] args) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         V2RApp v2r = new V2RApp();
         v2r.vehicle2r = new Vehicle2();
         v2r.levelSelectPanel = new LevelSelectPanel(v2r.vehicle2r.maps);
         v2r.btp = new BestTimesPanel();
-
-        // Calculate the center position
-        int centerX = (screenSize.width - 800) / 2;
-        int centerY = (screenSize.height - 600) / 2;
-
-        // Set the frame location
-        v2r.setLocation(centerX, centerY);
 
         v2r.vehicle2r.addEventListener(v2r);
         v2r.levelSelectPanel.addEventListener(v2r);
@@ -166,6 +159,23 @@ public class V2RApp extends JFrame implements TriggerListener {
         gameState = MENU_PANEL;
         v2r.revalidate();
         v2r.repaint();
+    }
+
+    private void centerWindow(int w) {
+        int h = switch (w) {
+            case 320 -> 240;
+            case 640 -> 480;
+            default -> 600;
+        };
+        setSize(w, h);
+
+        // Calculate the center position
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int centerX = (screenSize.width - w) / 2;
+        int centerY = (screenSize.height - h) / 2;
+
+        // Set the frame location
+        setLocation(centerX, centerY);
     }
 
     /**
@@ -232,6 +242,8 @@ public class V2RApp extends JFrame implements TriggerListener {
             this.getContentPane().removeAll();
             this.add(vehicle2r);
             gameState = GAME_PANEL;
+            vehicle2r.screenWidth = this.getWidth();
+            vehicle2r.screenHeight = this.getHeight();
             vehicle2r.init();
             timer.start();
             this.requestFocusInWindow();
@@ -252,13 +264,23 @@ public class V2RApp extends JFrame implements TriggerListener {
      */
     @Override
     public void onEventOccurred(TriggerEvent event) {
-        if (DEBUG) System.out.println("Event occurred: " + event.getMessage());
-        if (event.getMessage().equals("exit_loop")) {
+        String message = event.getMessage();
+        if (DEBUG) System.out.println("Event occurred: " + message);
+        if (message.startsWith("exit_loop")) {
             if (gameState == MENU_PANEL) {
                 System.exit(0);
             }
             if (gameState == OPTIONS_PANEL || gameState == SELECT_PANEL || gameState == BEST_TIMES) {
                 timer.stop();
+                if (gameState == OPTIONS_PANEL) {
+                    int newSize = Integer.parseInt(message.substring(message.lastIndexOf(':') + 1));
+                    switch (newSize) {
+                        case 320 -> centerWindow(320);
+                        case 800 -> centerWindow(800);
+                        default -> centerWindow(640);
+                    }
+
+                }
                 gameState = MENU_PANEL;
                 this.getContentPane().removeAll();
                 this.add(this.mp);
@@ -272,16 +294,15 @@ public class V2RApp extends JFrame implements TriggerListener {
                 this.add(this.mp);
             }
         }
-        if (event.getMessage().contains("gotoBestTimes")) {
+        if (message.contains("gotoBestTimes")) {
             gameState = BEST_TIMES;
             this.getContentPane().removeAll();
             this.btp = new BestTimesPanel();
             this.btp.addEventListener(this);
             this.add(this.btp);
         }
-        if (event.getMessage().contains("map:")) {
-            String msg = event.getMessage();
-            msg = msg.substring(msg.lastIndexOf(':') + 1);
+        if (message.contains("map:")) {
+            String msg = message.substring(message.lastIndexOf(':') + 1);
 
             if (DEBUG) System.out.println("Go to map: " + msg);
             vehicle2r.currentLevel = Integer.parseInt(msg);

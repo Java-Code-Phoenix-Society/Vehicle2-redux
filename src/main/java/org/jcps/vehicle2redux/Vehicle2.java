@@ -197,8 +197,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
         double axisPosition = 0.0, corpusPosition = 0.0;
 
         // Get the dimensions of the screen
-        screenWidth = this.getSize().width;
-        screenHeight = this.getSize().height;
+        screenWidth = this.getParent().getSize().width;
+        screenHeight = this.getParent().getSize().height;
 
         // Create screen buffer and graphics context
         screenBuffer = this.createImage(this.screenWidth, this.screenHeight);

@@ -31,7 +31,7 @@ public class OptionsPanel extends JPanel {
     /**
      * Difficulty combo box example
      */
-    private final JComboBox<String> difficultyComboBox;
+    private final JComboBox<String> screenSizeCombo;
     /**
      * A button that, when clicked, triggers an event to navigate back to the game's main menu.
      */
@@ -65,8 +65,9 @@ public class OptionsPanel extends JPanel {
         btnBTPanel = new JButton("Best Times");
         btnBTPanel.addActionListener(e -> goBestTimes());
 
-        String[] difficultyLevels = {"Easy", "Medium", "Hard"};
-        difficultyComboBox = new JComboBox<>(difficultyLevels);
+        String[] screenSize = {"320", "640", "800"};
+        screenSizeCombo = new JComboBox<>(screenSize);
+        screenSizeCombo.setSelectedIndex(1);
         soundCheckBox = new JCheckBox();
 
         add(titleLabel, gbc);
@@ -74,7 +75,7 @@ public class OptionsPanel extends JPanel {
         add(new JLabel("Enable Sound:"), gbc);
         add(soundCheckBox, gbc);
         add(new JLabel("Difficulty Level:"), gbc);
-        add(difficultyComboBox, gbc);
+        add(screenSizeCombo, gbc);
         add(btnBTPanel, gbc); // Empty label for spacing
         add(btnMenu, gbc);
     }
@@ -92,7 +93,9 @@ public class OptionsPanel extends JPanel {
      * This method should be called when a user wants to return to the main menu.
      */
     private void returnToMenu() {
-        fireEvent("exit_loop");
+        String settings = "";
+        settings = (String) screenSizeCombo.getSelectedItem();
+        fireEvent("exit_loop:" + settings);
     }
 
     /**
