@@ -40,5 +40,5 @@ jobs:
           name: Vehicle2redux
           path: |
             Vehicle2redux/
-          # **/Vehicle2-redux-1.0-SNAPSHOT.jar
+          # **/dev.jcps.vehicle2redux.Vehicle2-redux-1.0-SNAPSHOT.jar
           # Levels/

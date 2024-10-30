@@ -1,3 +1,7 @@
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,10 +14,11 @@ import java.util.HashMap;
  */
 class LevelMap {
     private final String filename;
+    @SuppressWarnings("WeakerAccess")
     public GameParams lp;
 
     /**
-     * Constructor for the LevelMap class.
+     * Constructor for the dev.jcps.vehicle2redux.LevelMap class.
      *
      * @param filename The name of the file containing the level map data.
      */
@@ -53,9 +58,9 @@ class LevelMap {
     }
 
     /**
-     * Retrieves the filename associated with the LevelMap.
+     * Retrieves the filename associated with the dev.jcps.vehicle2redux.LevelMap.
      *
-     * @return The filename associated with the LevelMap.
+     * @return The filename associated with the dev.jcps.vehicle2redux.LevelMap.
      */
     public String getFilename() {
         return this.filename;
@@ -66,7 +71,7 @@ class LevelMap {
     /**
      * Reads key-value pairs from the file and populates the HashMap.
      */
-    private HashMap<String, String> readHashtableFromFile() {
+    private @NotNull HashMap<String, String> readHashtableFromFile() {
         HashMap<String, String> hashMap = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(this.filename))) {
@@ -84,7 +89,7 @@ class LevelMap {
                 }
             }
         } catch (IOException e) {
-            System.out.println("File error: " + e.getMessage());
+            Vehicle2.logger.error("File error: {}", e.getMessage());
         }
         return hashMap;
     }
@@ -99,7 +104,7 @@ class LevelMap {
             randomAccessFile.seek(0L);
             randomAccessFile.setLength(0L);
         } catch (Exception e) {
-            System.err.println("There was an error preparing the file in writeHashmapToFile().");
+            Vehicle2.logger.error("There was an error preparing the file in writeHashmapToFile().");
             return;
         }
 
@@ -110,7 +115,7 @@ class LevelMap {
             }
             randomAccessFile.close();
         } catch (Exception e) {
-            System.err.println("There was an error writing the file in writeHashmapToFile().");
+            Vehicle2.logger.error("There was an error writing the file in writeHashmapToFile().");
         }
     }
 }

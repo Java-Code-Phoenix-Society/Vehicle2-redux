@@ -1,8 +1,13 @@
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -14,7 +19,7 @@ public class LevelUtilities {
      *
      * @return ArrayList of level filenames.
      */
-    private static ArrayList<String> getLevelList() {
+    private static @NotNull ArrayList<String> getLevelList() {
         ArrayList<String> list = new ArrayList<>();
         URL url = null;
         String urlPath = null;
@@ -22,9 +27,9 @@ public class LevelUtilities {
         try {
             urlPath = "file:///" + System.getProperty("user.dir") + File.separator + "Levels";
             url = new URL(urlPath);
-            System.out.println("Loading maps from: " + urlPath);
+            Vehicle2.logger.info("Loading maps from: {}", urlPath);
         } catch (Exception e) {
-            e.printStackTrace();
+            Vehicle2.logger.error(Arrays.toString(e.getStackTrace()));
         }
 
         File file;
@@ -34,9 +39,9 @@ public class LevelUtilities {
             file = new File(new URI(url.toString()));
         } catch (Exception e) {
             String userDir = System.getProperty("user.dir");
-            System.err.println("Error trying to form File in getLevelList from default directory.\n" +
-                    "Attempting to create File directly from user.dir='" + userDir + "' property.\nNotes: " +
-                    "url=" + urlPath + ", urlContext=" + url);
+            String mainText = "Error trying to form File in getLevelList from default directory.\nAttempting to create File directly from";
+            Vehicle2.logger.error("{} user.dir='{}' property.\nNotes: url={}, urlContext={}",
+                    mainText, userDir, urlPath, url);
             file = new File(userDir);
         }
 
@@ -56,42 +61,39 @@ public class LevelUtilities {
     /**
      * Finds the index of the first occurrence of the target string in the given text.
      *
-     * @param text     The text to search.
-     * @param target   The target string to find.
-     * @param loc      The starting index for the search.
-     * @param caseBool Whether to perform a case-sensitive search.
+     * @param text   The text to search.
+     * @param target The target string to find.
      * @return The index of the first occurrence of the target string, or -1 if not found.
      */
-    private static int find(String text, String target, int loc, boolean caseBool) {
+    private static int find(@NotNull String text, @NotNull String target) {
         String firstChar = target.substring(0, 1);
         int targetLen = target.length();
         int textLen = text.length();
-        if (loc >= -1) {
-            for (int i = loc; i < textLen - targetLen + 1; ++i) {
-                String substring = text.substring(i, i + 1);
-                boolean checked = false;
-                if (caseBool) {
-                    if (substring.equalsIgnoreCase(firstChar)) {
-                        checked = true;
-                    }
-                } else if (substring.equals(firstChar)) {
-                    checked = true;
-                }
+        for (int i = 0; i < textLen - targetLen + 1; ++i) {
+            String substring = text.substring(i, i + 1);
+            boolean checked = false;
+            checked = isChecked(true, substring, firstChar, checked);
 
-                if (checked) {
-                    String substring1 = text.substring(i, i + targetLen);
-                    if (caseBool) {
-                        if (substring1.equalsIgnoreCase(target)) {
-                            return i;
-                        }
-                    } else if (substring1.equals(target)) {
-                        return i;
-                    }
+            if (checked) {
+                String substring1 = text.substring(i, i + targetLen);
+                if (substring1.equalsIgnoreCase(target)) {
+                    return i;
                 }
             }
-
         }
+
         return -1;
+    }
+
+    private static boolean isChecked(boolean caseBool, String substring, String firstChar, boolean checked) {
+        if (caseBool) {
+            if (substring.equalsIgnoreCase(firstChar)) {
+                checked = true;
+            }
+        } else if (substring.equals(firstChar)) {
+            checked = true;
+        }
+        return checked;
     }
 
     /**
@@ -102,20 +104,20 @@ public class LevelUtilities {
      * @return The index of the first occurrence of the target string, or -1 if not found.
      */
     public static int findIgnoreCase(String text, String target) {
-        return find(text, target, 0, true);
+        return find(text, target);
     }
 
     /**
-     * Retrieves an ArrayList of LevelMap objects based on the level files in the "Levels" directory.
+     * Retrieves an ArrayList of dev.jcps.vehicle2redux.LevelMap objects based on the level files in the "Levels" directory.
      *
-     * @return ArrayList of LevelMap objects.
+     * @return ArrayList of dev.jcps.vehicle2redux.LevelMap objects.
      */
-    public static ArrayList<LevelMap> getLevelMaps() {
+    public static @NotNull ArrayList<LevelMap> getLevelMaps() {
         ArrayList<String> files = getLevelList();
         ArrayList<LevelMap> maps = new ArrayList<>();
-        System.out.println("Map Files Loaded:");
+        Vehicle2.logger.info("Map Files Loaded:");
         for (Object s : files) {
-            System.out.println(s);
+            Vehicle2.logger.info("Loading: {}", s);
             LevelMap map = new LevelMap("Levels/" + s);
             maps.add(map);
         }
@@ -123,13 +125,13 @@ public class LevelUtilities {
     }
 
     /**
-     * Main method for testing LevelUtilities functionality.
+     * Main method for testing dev.jcps.vehicle2redux.LevelUtilities functionality.
      *
      * @param args Command line arguments (not used).
      */
     public static void main(String[] args) {
         ArrayList<LevelMap> maps = getLevelMaps();
-        System.out.println("Complete");
+        System.out.println("Complete"); //NOSONAR commandline output
         String test = null;
         String exceptionList = "";
         try {
@@ -137,8 +139,8 @@ public class LevelUtilities {
         } catch (Exception e) {
             exceptionList += e;
         }
-        System.out.println(exceptionList);
-        System.out.println(test);
+        System.out.println(exceptionList); //NOSONAR
+        System.out.println(test); //NOSONAR
     }
 
     public static void writeHashmapToFile(HashMap<String, String> map, String filename) {
@@ -148,7 +150,7 @@ public class LevelUtilities {
             randomAccessFile.seek(0L);
             randomAccessFile.setLength(0L);
         } catch (Exception e) {
-            System.err.println("There was an error preparing the file in writeHashmapToFile().");
+            Vehicle2.logger.error("There was an error preparing the file in writeHashmapToFile().");
             return;
         }
 
@@ -159,7 +161,7 @@ public class LevelUtilities {
             }
             randomAccessFile.close();
         } catch (Exception e) {
-            System.err.println("There was an error writing the file in writeHashmapToFile().");
+            Vehicle2.logger.error("There was an error writing the file in writeHashmapToFile().");
         }
     }
 }

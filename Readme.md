@@ -1,7 +1,7 @@
 # Vehicle 2: Redux
 - compiles with Java 17
 
-The vehicle app lets you "drive" a very special vehicle: just start the Vehicle2.jar file.
+The vehicle app lets you "drive" a very special vehicle: just start the dev.jcps.vehicle2redux.Vehicle2.jar file.
 
 To start driving, use the following keys to control it:
 - CURSOR LEFT: drive left 
