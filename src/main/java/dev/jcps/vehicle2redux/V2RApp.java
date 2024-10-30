@@ -1,4 +1,8 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,30 +18,35 @@ import java.awt.event.WindowEvent;
  * @author neoFuzz
  */
 public class V2RApp extends JFrame implements TriggerListener {
+    /**
+     * The Logger instance used for logging messages.
+     */
+    public static final Logger logger = LoggerFactory.getLogger(V2RApp.class);
     // Constants for the game state
     /**
      * Represents the game state when at the main menu panel.
      */
-    public final static int MENU_PANEL = 0;
+    public static final int MENU_PANEL = 0;
 
     /**
      * Represents the game state when at the game panel.
      */
-    public final static int GAME_PANEL = 1;
+    public static final int GAME_PANEL = 1;
 
     /**
      * Represents the game state when at the options panel.
      */
-    public final static int OPTIONS_PANEL = 2;
+    public static final int OPTIONS_PANEL = 2;
 
     /**
      * Represents the game state when at the level selection panel.
      */
-    public final static int SELECT_PANEL = 3;
+    public static final int SELECT_PANEL = 3;
     /**
      * Represents the game state when at the Best Times panel.
      */
-    public final static int BEST_TIMES = 4;
+    public static final int BEST_TIMES = 4;
+    public static final String LEVEL_TIMES = "Level-times.txt";
 
     // General variables
 
@@ -48,7 +57,7 @@ public class V2RApp extends JFrame implements TriggerListener {
     /**
      * Static debug flag. Set to true to show debugging information.
      */
-    public static boolean DEBUG = true;
+    public static boolean debug = false;
     /**
      * The Timer instance for handling game events.
      */
@@ -56,7 +65,7 @@ public class V2RApp extends JFrame implements TriggerListener {
     /**
      * The delay interval for the timer (in milliseconds).
      */
-    private final int delay = 10;
+    private static final int DELAY = 10;
     /**
      * The MenuPanel instance representing the main menu of the game.
      * The menu provides options for starting the game, selecting a level, configuring options, and exiting the game.
@@ -71,7 +80,7 @@ public class V2RApp extends JFrame implements TriggerListener {
      * The Vehicle2 instance representing the main game.
      * This object manages the game logic, level transitions, and game controls.
      */
-    public Vehicle2 vehicle2r;
+    private Vehicle2 vehicle2r;
     /**
      * The previous level in the game. Used to manage level transitions.
      */
@@ -96,15 +105,15 @@ public class V2RApp extends JFrame implements TriggerListener {
         setTitle("V2: Redux");
         setUndecorated(true);
         setSize(800, 600);
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setLocation(0, 0);
         setLayout(new BorderLayout());
         prevLevel = -1;
 
         // Initialize game loop
-        timer = new Timer(delay, e -> {
-            update(); // Method to update game state
-        });
+        timer = new Timer( // NOSONAR
+                DELAY, e -> update() /* Method to update game state */
+        );
         timer.setInitialDelay(20);
 
         this.mp = new MenuPanel();
@@ -114,7 +123,7 @@ public class V2RApp extends JFrame implements TriggerListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                Vehicle2.levelTimes = LevelUtilities.readHashmapFromFile("Level-times.txt");
+                Vehicle2.levelTimes = LevelUtilities.readHashmapFromFile(LEVEL_TIMES);
             }
 
             @Override
@@ -126,7 +135,7 @@ public class V2RApp extends JFrame implements TriggerListener {
 
             @Override
             public void windowClosed(WindowEvent e) {
-                LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, "Level-times.txt");
+                LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, LEVEL_TIMES);
                 System.exit(0);
             }
         });
@@ -144,13 +153,19 @@ public class V2RApp extends JFrame implements TriggerListener {
      *
      * @param args The command-line arguments.
      */
-    public static void main(String[] args) {
+    public static void main(String @NotNull [] args) {
+        for (String arg : args) {
+            if (arg.startsWith("--debug")) {
+                V2RApp.debug = true;
+                break;
+            }
+        }
         V2RApp v2r = new V2RApp();
-        v2r.vehicle2r = new Vehicle2();
-        v2r.levelSelectPanel = new LevelSelectPanel(v2r.vehicle2r.maps);
+        v2r.setVehicle2r(new Vehicle2());
+        v2r.levelSelectPanel = new LevelSelectPanel(v2r.getVehicle2r().maps);
         v2r.btp = new BestTimesPanel();
 
-        v2r.vehicle2r.addEventListener(v2r);
+        v2r.getVehicle2r().addEventListener(v2r);
         v2r.levelSelectPanel.addEventListener(v2r);
         v2r.optionsPanel.addEventListener(v2r);
         v2r.btp.addEventListener(v2r);
@@ -186,21 +201,20 @@ public class V2RApp extends JFrame implements TriggerListener {
      */
     private void update() {
         if (gameState == GAME_PANEL) {
-            if (vehicle2r.runState) {
-                vehicle2r.run();
+            if (getVehicle2r().isRunning()) {
+                getVehicle2r().run();
             } else {
                 // Stop the timer from running a duplicate loop
                 timer.stop();
 
-                if (prevLevel != -2) {
-                    if (prevLevel < vehicle2r.currentLevel) {
-                        ++vehicle2r.currentLevel;
-                        prevLevel++;
-                    }
+                if (prevLevel != -2 && prevLevel < getVehicle2r().getCurrentLevel()) {
+                    getVehicle2r().setCurrentLevel(getVehicle2r().getCurrentLevel() + 1);
+                    prevLevel++;
                 }
-                if (vehicle2r.currentLevel < vehicle2r.maps.size()) {
-                    if (vehicle2r.gp != vehicle2r.maps.get(vehicle2r.currentLevel).lp) {
-                        vehicle2r.init();
+
+                if (getVehicle2r().getCurrentLevel() < getVehicle2r().maps.size()) {
+                    if (getVehicle2r().gp != getVehicle2r().maps.get(getVehicle2r().getCurrentLevel()).lp) {
+                        getVehicle2r().init();
                         timer.start();
                     } else {
                         returnToMenu();
@@ -211,9 +225,7 @@ public class V2RApp extends JFrame implements TriggerListener {
             }
         }
 
-        if (gameState == MENU_PANEL) {
-            if (timer.isRunning()) timer.stop();
-        }
+        if (gameState == MENU_PANEL && timer.isRunning()) timer.stop();
 
         repaint();
     }
@@ -238,13 +250,13 @@ public class V2RApp extends JFrame implements TriggerListener {
      */
     public void startGame() {
         // Simple protection for no maps
-        if (!vehicle2r.maps.isEmpty()) {
+        if (!getVehicle2r().maps.isEmpty()) {
             this.getContentPane().removeAll();
-            this.add(vehicle2r);
+            this.add(getVehicle2r());
             gameState = GAME_PANEL;
-            vehicle2r.screenWidth = this.getWidth();
-            vehicle2r.screenHeight = this.getHeight();
-            vehicle2r.init();
+            getVehicle2r().screenWidth = this.getWidth();
+            getVehicle2r().screenHeight = this.getHeight();
+            getVehicle2r().init();
             timer.start();
             this.requestFocusInWindow();
         } else {
@@ -263,9 +275,9 @@ public class V2RApp extends JFrame implements TriggerListener {
      * @param event Incoming event from trigger, containing a message that dictates the action to be taken.
      */
     @Override
-    public void onEventOccurred(TriggerEvent event) {
+    public void onEventOccurred(@NotNull TriggerEvent event) {
         String message = event.getMessage();
-        if (DEBUG) System.out.println("Event occurred: " + message);
+        if (debug) V2RApp.logger.debug("Event occurred: {}", message);
         if (message.startsWith("exit_loop")) {
             if (gameState == MENU_PANEL) {
                 System.exit(0);
@@ -288,7 +300,7 @@ public class V2RApp extends JFrame implements TriggerListener {
             if (gameState == GAME_PANEL) {
                 timer.stop();
                 gameState = MENU_PANEL;
-                vehicle2r.currentLevel = 0;
+                getVehicle2r().setCurrentLevel(0);
                 prevLevel = -1;
                 this.getContentPane().removeAll();
                 this.add(this.mp);
@@ -304,8 +316,8 @@ public class V2RApp extends JFrame implements TriggerListener {
         if (message.contains("map:")) {
             String msg = message.substring(message.lastIndexOf(':') + 1);
 
-            if (DEBUG) System.out.println("Go to map: " + msg);
-            vehicle2r.currentLevel = Integer.parseInt(msg);
+            if (debug) V2RApp.logger.debug("Go to map: {}", msg);
+            getVehicle2r().setCurrentLevel(Integer.parseInt(msg));
             prevLevel = -2;
             startGame();
         }
@@ -337,7 +349,7 @@ public class V2RApp extends JFrame implements TriggerListener {
      */
     private void openLevelSelect() {
         // Simple protection for no maps
-        if (!vehicle2r.maps.isEmpty()) {
+        if (!getVehicle2r().maps.isEmpty()) {
             this.getContentPane().removeAll();
             this.add(this.levelSelectPanel);
             gameState = SELECT_PANEL;
@@ -349,6 +361,14 @@ public class V2RApp extends JFrame implements TriggerListener {
         }
         revalidate();
         repaint();
+    }
+
+    public Vehicle2 getVehicle2r() {
+        return vehicle2r;
+    }
+
+    public void setVehicle2r(Vehicle2 vehicle2r) {
+        this.vehicle2r = vehicle2r;
     }
 
     /**
@@ -409,7 +429,7 @@ public class V2RApp extends JFrame implements TriggerListener {
 
             // Set up exit button
             btnExit = createButton("Exit Game", buttonSize, KeyEvent.VK_X, e -> {
-                LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, "Level-times.txt");
+                LevelUtilities.writeHashmapToFile(Vehicle2.levelTimes, LEVEL_TIMES);
                 System.exit(0);
             });
 
@@ -432,7 +452,7 @@ public class V2RApp extends JFrame implements TriggerListener {
          * @param action   The ActionListener to be triggered when the button is clicked.
          * @return A configured JButton with the specified properties.
          */
-        private JButton createButton(String text, Dimension size, int mnemonic, ActionListener action) {
+        private @NotNull JButton createButton(String text, Dimension size, int mnemonic, ActionListener action) {
             JButton button = new JButton(text);
             button.setPreferredSize(size);
             button.setMnemonic(mnemonic);

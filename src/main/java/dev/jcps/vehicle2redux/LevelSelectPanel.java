@@ -1,4 +1,7 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -53,7 +56,7 @@ public class LevelSelectPanel extends JPanel {
      * @param maps A list of {@code LevelMap} objects, each containing information about a game level.
      * @see LevelMap
      */
-    public LevelSelectPanel(ArrayList<LevelMap> maps) {
+    public LevelSelectPanel(@NotNull ArrayList<LevelMap> maps) {
         btnLevels = new ArrayList<>();
 
         int mapIndex = 0;
@@ -63,7 +66,7 @@ public class LevelSelectPanel extends JPanel {
             btn.addActionListener(e -> {
                 JButton button = (JButton) e.getSource();
                 String btnText = button.getText();
-                if (V2RApp.DEBUG) System.out.println("Selected level: " + btnText);
+                if (V2RApp.debug) System.out.println("Selected level: " + btnText);
                 fireEvent("map:" + finalMapIndex);
             });
             btnLevels.add(btn);
@@ -84,7 +87,8 @@ public class LevelSelectPanel extends JPanel {
      * @param originalHeight The original height of the image.
      * @return An array containing the new width and height of the image after scaling.
      */
-    private static int[] scaleImage(int originalWidth, int originalHeight) {
+    @Contract(value = "_, _ -> new", pure = true)
+    private static int @NotNull [] scaleImage(int originalWidth, int originalHeight) {
         int newWidth;
         int newHeight;
 
@@ -110,7 +114,7 @@ public class LevelSelectPanel extends JPanel {
      * @return A {@code JButton} with the scaled image and text.
      * @see javax.swing.JButton
      */
-    private JButton createImageButton(String imagePath) {
+    private @NotNull JButton createImageButton(@NotNull String imagePath) {
         JButton button = new JButton();
         String description = "";
 
@@ -132,7 +136,7 @@ public class LevelSelectPanel extends JPanel {
             description = imagePath.substring(startIndex, endIndex);
 
         } catch (IOException e) {
-            if (V2RApp.DEBUG) {
+            if (V2RApp.debug) {
                 System.err.println("Error loading image: " + imagePath + e.getMessage());
             }
         } finally {

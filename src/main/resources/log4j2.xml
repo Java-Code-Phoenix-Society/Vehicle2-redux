@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="Console">
+            <PatternLayout
+                    pattern="%d{HH:mm:ss.SSS} [%t] %-5level - %msg%n"/>
+        </Console>
+
+        <File name="File-Appender" fileName="${sys:LOG_FILE_NAME:-logs/log4j.log}">
+            <PatternLayout>
+                <pattern>%d %p [%t] %C{1}.%M() : %m%n</pattern>
+            </PatternLayout>
+        </File>
+
+    </Appenders>
+
+    <Loggers>
+        <Root level="${sys:LOG_LEVEL:-TRACE}">
+            <AppenderRef ref="File-Appender"/>
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

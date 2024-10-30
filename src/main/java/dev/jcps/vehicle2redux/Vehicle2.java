@@ -1,4 +1,6 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -28,27 +30,29 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * The delay time for staying in the goal state (in milliseconds).
      */
-    private final long delay = 5000; // 5 seconds: Time to stay in the goal
+    private static final long DELAY = 5000; // 5 seconds: Time to stay in the goal
     /**
      * The list of TriggerListeners for handling game events.
      */
-    final private ArrayList<TriggerListener> listeners = new ArrayList<>();
+    private final ArrayList<TriggerListener> listeners = new ArrayList<>();
     /**
-     * The current level in the game.
+     * The current level the game is on.
      */
-    public int currentLevel;
+    private int currentLevel;
     /**
      * The game parameters object containing various settings.
      */
-    public GameParams gp;
+    @SuppressWarnings("WeakerAccess")
+    public transient GameParams gp;
     /**
-     * Represents the run state of the game.
+     * The current running state of the game.
      */
-    public boolean runState = false;
+    private boolean runState = false;
     /**
      * The list of level maps containing level information.
      */
-    public ArrayList<LevelMap> maps;
+    @SuppressWarnings("WeakerAccess")
+    public transient ArrayList<LevelMap> maps;
     /**
      * Represents the state of the cursor.
      */
@@ -92,31 +96,31 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * The graphics object for rendering.
      */
-    Graphics graphics;
+    transient Graphics graphics;
     /**
      * The background image.
      */
-    Image imgBG;
+    private transient Image imgBG;
     /**
      * The screen buffer image.
      */
-    Image screenBuffer;
+    private transient Image screenBuffer;
     /**
      * The tile image.
      */
-    Image tileImg;
+    private transient Image tileImg;
     /**
      * The media tracker for loading images.
      */
-    MediaTracker tracker;
+    private MediaTracker tracker;
     /**
      * The player vehicle object.
      */
-    PlayerVehicle pVehicle;
+    transient PlayerVehicle pVehicle;
     /**
      * The world parameters object.
      */
-    WorldParameters worldParameters;
+    transient WorldParameters worldParameters;
     /**
      * The x-coordinate of the level time.
      */
@@ -134,15 +138,14 @@ public class Vehicle2 extends JPanel implements ActionListener {
      */
     boolean insideGoal = false;
 
-
     /**
      * Constructs a new instance of the Vehicle2 class.
      * Initializes the object with default values and sets up the initial level.
      * The default size of the object is set to 800x600 pixels.
      */
     public Vehicle2() {
-        currentLevel = 0; // Set the initial level to 0
-        levelTimes = new LinkedHashMap<>(); // Initialize the levelTimes HashMap
+        setCurrentLevel(0); // Set the initial level to 0
+        levelTimes = new LinkedHashMap<>(); // NOSONAR Initialize the levelTimes HashMap
         maps = LevelUtilities.getLevelMaps(); // Retrieve level maps using LevelUtilities and set the maps variable
         setSize(800, 600); // Set the default size of the Vehicle2 object to 800x600 pixels
     }
@@ -171,6 +174,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * Passes through to paintComponent(graphics)
      */
+    @Override
     public void paint(Graphics graphics) {
         this.paintComponent(graphics);
     }
@@ -178,6 +182,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * Passes through to paintComponent(graphics)
      */
+    @Override
     public void update(Graphics graphics) {
         this.paintComponent(graphics);
     }
@@ -189,12 +194,16 @@ public class Vehicle2 extends JPanel implements ActionListener {
      */
     public void init() {
         // Retrieve the current level parameters
-        gp = maps.get(currentLevel).lp;
+        gp = maps.get(getCurrentLevel()).lp;
 
         // Initialize variables for positioning and dimensions
-        int partIndex, wheelOffset = 43, corpusOffset = 83;
-        int ropeSegmentOffset = 40, axisOffset;
-        double axisPosition = 0.0, corpusPosition = 0.0;
+        int partIndex;
+        int wheelOffset = 43;
+        int corpusOffset = 83;
+        int ropeSegmentOffset = 40;
+        int axisOffset;
+        double axisPosition = 0.0;
+        double corpusPosition = 0.0;
 
         // Get the dimensions of the screen
         screenWidth = this.getParent().getSize().width;
@@ -232,23 +241,12 @@ public class Vehicle2 extends JPanel implements ActionListener {
             for (partIndex = 0; partIndex < pVehicle.maxRopeSegments; partIndex++) {
                 double angleIncrement = Math.PI * (partIndex / 5.0);
                 this.pVehicle.partList[this.pVehicle.bodyPart] =
-                        new Connector(xPartOffset + (double) ropeSegmentOffset * Math.cos(angleIncrement),
-                                corpusPosition + (double) ropeSegmentOffset * Math.sin(angleIncrement),
+                        new Connector(xPartOffset + ropeSegmentOffset * Math.cos(angleIncrement),
+                                corpusPosition + ropeSegmentOffset * Math.sin(angleIncrement),
                                 this.pVehicle.mWheels * this.worldParameters.scaleM, greenColor);
                 ++this.pVehicle.bodyPart;
             }
-            partIndex = 0;
-            while (partIndex < pVehicle.maxRopeSegments) {
-                this.pVehicle.vParts[this.pVehicle.ropePart] =
-                        new VehiclePart(partIndex + 11 * axisOffset, (partIndex + 1) % pVehicle.maxRopeSegments + 11 * axisOffset,
-                                this.worldParameters.scaleF * this.pVehicle.fWheels, orangeColor);
-                ++this.pVehicle.ropePart;
-                this.pVehicle.vParts[this.pVehicle.ropePart] =
-                        new VehiclePart(partIndex + 11 * axisOffset, (partIndex + 3) % pVehicle.maxRopeSegments + 11 * axisOffset,
-                                this.worldParameters.scaleF * this.pVehicle.fWheels, orangeColor);
-                ++this.pVehicle.ropePart;
-                ++partIndex;
-            }
+            processRopeSegs(axisOffset, orangeColor);
             this.pVehicle.partList[this.pVehicle.bodyPart] =
                     new Connector(xPartOffset, corpusPosition, this.worldParameters.scaleM * this.pVehicle.mAxis,
                             greenColor);
@@ -292,7 +290,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
                             this.pVehicle.ropeMin, new Color(0, 80, 185));
 
             this.pVehicle.vParts[this.pVehicle.ropePart].sag = this.worldParameters.scaleSize *
-                    (double) gp.getInt("l0Rope");
+                    gp.getInt("l0Rope");
             this.pVehicle.vParts[this.pVehicle.ropePart].partActive = false;
             ++this.pVehicle.ropePart;
             ++partIndex;
@@ -308,7 +306,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
                     new VehiclePart(this.pVehicle.ropeSegments[1] + partIndex - 1, this.pVehicle.ropeSegments[1] + partIndex,
                             this.pVehicle.ropeMin, new Color(70, 170, 255));
             this.pVehicle.vParts[this.pVehicle.ropePart].sag = this.worldParameters.scaleSize *
-                    (double) gp.getInt("l0Rope");
+                    gp.getInt("l0Rope");
             this.pVehicle.vParts[this.pVehicle.ropePart].partActive = false;
             ++this.pVehicle.ropePart;
             ++partIndex;
@@ -328,8 +326,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
         }
 
         // Print map information
-        if (V2RApp.DEBUG)
-            System.out.println("Map: " + gp.paramMap.get("Bild_c") + ", nf=" + this.pVehicle.ropePart + ", np=" + this.pVehicle.bodyPart);
+        if (V2RApp.debug)
+            V2RApp.logger.info("Map: {}, nf={}, np={}", gp.paramMap.get("Bild_c"), this.pVehicle.ropePart, this.pVehicle.bodyPart);
 
         // Set the initial position of the game world
         this.worldParameters.wpX = this.pVehicle.partList[this.pVehicle.pCounter].x - ((double) this.screenWidth / 2);
@@ -337,7 +335,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
 
         // Add the control listeners once. This could probably be done better.
         if (graphicsReady == 0) {
-            this.addMouseListener(new xMA());
+            this.addMouseListener(new ExMouseAdapter());
             this.addMouseMotionListener(new MouseControls());
             this.getRootPane().getParent().addKeyListener(new GameControls());
         }
@@ -345,7 +343,22 @@ public class Vehicle2 extends JPanel implements ActionListener {
 
         // Start the timer and set the run state to true
         levelStartTime = System.currentTimeMillis();
-        this.runState = true;
+        this.setRunState(true);
+    }
+
+    private void processRopeSegs(int axisOffset, Color orangeColor) {
+        int partIndex = 0;
+        while (partIndex < pVehicle.maxRopeSegments) {
+            this.pVehicle.vParts[this.pVehicle.ropePart] =
+                    new VehiclePart(partIndex + 11 * axisOffset, (partIndex + 1) % pVehicle.maxRopeSegments + 11 * axisOffset,
+                            this.worldParameters.scaleF * this.pVehicle.fWheels, orangeColor);
+            ++this.pVehicle.ropePart;
+            this.pVehicle.vParts[this.pVehicle.ropePart] =
+                    new VehiclePart(partIndex + 11 * axisOffset, (partIndex + 3) % pVehicle.maxRopeSegments + 11 * axisOffset,
+                            this.worldParameters.scaleF * this.pVehicle.fWheels, orangeColor);
+            ++this.pVehicle.ropePart;
+            ++partIndex;
+        }
     }
 
     /**
@@ -388,7 +401,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
         try {
             pixelGrabber.grabPixels();
         } catch (InterruptedException e) {
-            System.err.println("Interrupted waiting for pixels!");
+            V2RApp.logger.error("Interrupted waiting for pixels!");
             Thread.currentThread().interrupt();
             return;
         }
@@ -466,6 +479,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * Paint the game
      */
+    @Override
     public void paintComponent(Graphics graphics) {
         if (this.graphicsReady > 0) {
             graphics.drawImage(this.screenBuffer, 0, 0, this); // Draw game image
@@ -494,10 +508,12 @@ public class Vehicle2 extends JPanel implements ActionListener {
             ++n;
         }
         Connector c = this.pVehicle.partList[this.pVehicle.pCounter];
+        d4 /= 20.0;
+        d5 /= 20.0;
         this.worldParameters.wpX = SMOOTHING_FACTOR * this.worldParameters.x + ADJUSTMENT_FACTOR *
-                (c.x + VELOCITY_MULTIPLIER * (d4 /= 20.0) - (double) (this.screenWidth / 2));
+                (c.x + VELOCITY_MULTIPLIER * d4 - ((double) this.screenWidth / 2));
         this.worldParameters.wpY = SMOOTHING_FACTOR * this.worldParameters.y + ADJUSTMENT_FACTOR *
-                (c.y + VELOCITY_MULTIPLIER * (d5 /= 20.0) - (double) (this.screenHeight / 2));
+                (c.y + VELOCITY_MULTIPLIER * d5 - ((double) this.screenHeight / 2));
         this.worldParameters.viewportX = (int) this.worldParameters.wpX;
         this.worldParameters.viewportY = (int) this.worldParameters.wpY;
         if (this.worldParameters.viewportX < 0) {
@@ -540,9 +556,12 @@ public class Vehicle2 extends JPanel implements ActionListener {
         if (this.pVehicle.activeRope[this.pVehicle.ropeSlot] && this.worldParameters.windRope) {
             n = this.pVehicle.ropeAnchor[this.pVehicle.ropeSlot];
             while (n < this.pVehicle.ropeAnchor[this.pVehicle.ropeSlot] + this.pVehicle.maxRopeSegments) {
-                if (!(this.pVehicle.vParts[n].rLength < this.pVehicle.ropeMax)) break;
-                this.pVehicle.vParts[n].rLength *= 1.1;
-                ++n;
+                if (this.pVehicle.vParts[n].rLength < this.pVehicle.ropeMax) {
+                    this.pVehicle.vParts[n].rLength *= 1.1;
+                    ++n;
+                } else {
+                    break;
+                }
             }
             this.worldParameters.windRope = false;
         }
@@ -566,10 +585,10 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 this.pVehicle.partList[this.pVehicle.ropeSegments[this.pVehicle.ropeSlot] + n].gToggle = true;
                 this.pVehicle.vParts[this.pVehicle.ropeAnchor[this.pVehicle.ropeSlot] + n].partActive = true;
                 this.pVehicle.partList[this.pVehicle.ropeSegments[this.pVehicle.ropeSlot] + n].x =
-                        c.x + (double) ((1 + n) * 2) *
+                        c.x + ((1 + n) * 2) *
                                 Math.cos(this.pVehicle.turretAngle);
                 this.pVehicle.partList[this.pVehicle.ropeSegments[this.pVehicle.ropeSlot] + n].y =
-                        c.y + (double) ((1 + n) * 2) *
+                        c.y + ((1 + n) * 2) *
                                 Math.sin(this.pVehicle.turretAngle);
                 this.pVehicle.vParts[this.pVehicle.ropeAnchor[this.pVehicle.ropeSlot] + n].rLength =
                         this.pVehicle.ropeMin;
@@ -593,10 +612,10 @@ public class Vehicle2 extends JPanel implements ActionListener {
                     int n4 = n + 11 * n3;
                     this.pVehicle.partList[n4].dy +=
                             (this.pVehicle.partList[pVehicle.maxRopeSegments + 11 * n3].x -
-                                    this.pVehicle.partList[n4].x) * ENGINE_FORCE * (double) n2;
+                                    this.pVehicle.partList[n4].x) * ENGINE_FORCE * n2;
                     this.pVehicle.partList[n4].dx +=
                             (this.pVehicle.partList[n4].y - this.pVehicle.partList[pVehicle.maxRopeSegments +
-                                    11 * n3].y) * ENGINE_FORCE * (double) n2;
+                                    11 * n3].y) * ENGINE_FORCE * n2;
                     ++n;
                 }
                 ++n3;
@@ -612,8 +631,10 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 double d8 = Math.sqrt(d6 * d6 + d7 * d7);
                 double d9 = this.pVehicle.vParts[n].rLength * (d8 - this.pVehicle.vParts[n].sag);
                 double d10 = d9 / this.pVehicle.partList[this.pVehicle.vParts[n].x].angle;
-                this.pVehicle.partList[this.pVehicle.vParts[n].x].dx -= this.worldParameters.dt * d10 * (d6 /= d8);
-                this.pVehicle.partList[this.pVehicle.vParts[n].x].dy -= this.worldParameters.dt * d10 * (d7 /= d8);
+                d6 /= d8;
+                d7 /= d8;
+                this.pVehicle.partList[this.pVehicle.vParts[n].x].dx -= this.worldParameters.dt * d10 * (d6);
+                this.pVehicle.partList[this.pVehicle.vParts[n].x].dy -= this.worldParameters.dt * d10 * (d7);
                 d10 = d9 / this.pVehicle.partList[this.pVehicle.vParts[n].y].angle;
                 this.pVehicle.partList[this.pVehicle.vParts[n].y].dx += this.worldParameters.dt * d10 * d6;
                 this.pVehicle.partList[this.pVehicle.vParts[n].y].dy += this.worldParameters.dt * d10 * d7;
@@ -646,9 +667,9 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 if ((c2 = this.worldParameters.checkPosition((int) this.pVehicle.partList[n].x,
                         (int) this.pVehicle.partList[n].y)) != 'l' && c2 != 'w' ||
                         this.pVehicle.partList[n].x < 0.0 ||
-                        this.pVehicle.partList[n].x > (double) (this.worldParameters.levelWidth - 1) ||
+                        this.pVehicle.partList[n].x > (this.worldParameters.levelWidth - 1) ||
                         this.pVehicle.partList[n].y < 0.0 ||
-                        this.pVehicle.partList[n].y > (double) (this.worldParameters.levelHeight - 1)) {
+                        this.pVehicle.partList[n].y > (this.worldParameters.levelHeight - 1)) {
                     if (n == this.pVehicle.ropeSegments[0] + this.pVehicle.maxRopeSegments - 1) {
                         this.pVehicle.inactiveRope[0] = true;
                     } else if (n == this.pVehicle.ropeSegments[1] + this.pVehicle.maxRopeSegments - 1) {
@@ -707,15 +728,15 @@ public class Vehicle2 extends JPanel implements ActionListener {
                         (int) (pVehicle.partList[21].y - 25.0 - worldParameters.viewportY) :
                         (int) (pVehicle.partList[10].y - 25.0 - worldParameters.viewportY);
                 graphics.setColor(new Color(255, 0, 0));
-                graphics.drawString("Stay inside the goal: " + ((delay - elapsedTime) / 1000), x, y);
+                graphics.drawString("Stay inside the goal: " + ((DELAY - elapsedTime) / 1000), x, y);
             }
-            if (elapsedTime >= delay) {
-                this.runState = false;
+            if (elapsedTime >= DELAY) {
+                this.setRunState(false);
                 int storedTime = 9999;
                 try {
                     storedTime = parseInt(levelTimes.get(gp.paramMap.get("Bild")));
                 } catch (Exception e) {
-                    if (V2RApp.DEBUG) System.out.println("No stored time..");
+                    if (V2RApp.debug) V2RApp.logger.debug("No stored time..");
                 }
                 if (levelTime < storedTime) {
                     levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
@@ -747,7 +768,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        // Empty
     }
 
     /**
@@ -765,12 +786,12 @@ public class Vehicle2 extends JPanel implements ActionListener {
             try {
                 imgBuffer = ImageIO.read(imageFile);
             } catch (IOException e) {
-                if (V2RApp.DEBUG) {
-                    System.out.println("Image not found!" + e.getMessage());
+                if (V2RApp.debug) {
+                    V2RApp.logger.warn("Image not found! {}", e.getMessage());
                 }
             }
         } else {
-            System.err.println("Image not found!");
+            V2RApp.logger.warn("Image not found!");
             System.exit(1);
         }
         return imgBuffer;
@@ -788,14 +809,36 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 // Opens the specified URL in the default web browser.
                 Desktop.getDesktop().browse(url.toURI());
             } catch (IOException | URISyntaxException e) {
-                if (V2RApp.DEBUG) {
-                    System.out.println("Error opening URL in browser: " + e.getMessage());
+                if (V2RApp.debug) {
+                    V2RApp.logger.error("Error opening URL in browser: {}", e.getMessage());
                 }
             }
         } else {
             // Desktop not supported, handle this case if needed
-            System.out.println("Desktop not supported for launching web browser.");
+            V2RApp.logger.warn("Desktop not supported for launching web browser.");
         }
+    }
+
+    /**
+     * Represents the run state of the game.
+     */
+    public boolean isRunning() {
+        return runState;
+    }
+
+    public void setRunState(boolean runState) {
+        this.runState = runState;
+    }
+
+    /**
+     * The current level in the game.
+     */
+    public int getCurrentLevel() {
+        return currentLevel;
+    }
+
+    public void setCurrentLevel(int currentLevel) {
+        this.currentLevel = currentLevel;
     }
 
     /**
@@ -817,7 +860,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
          * @param keyEvent The KeyEvent associated with the key press.
          */
         @Override
-        public void keyPressed(KeyEvent keyEvent) {
+        public void keyPressed(@NotNull KeyEvent keyEvent) {
             // Get the code of the pressed key
             int keyCode = keyEvent.getKeyCode();
 
@@ -863,7 +906,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
             }
             // Escape to exit the game.
             if (keyCode == KeyEvent.VK_ESCAPE) {
-                runState = false;
+                setRunState(false);
                 fireEvent("exit_loop");
             }
         }
@@ -874,7 +917,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
          * @param keyEvent The KeyEvent associated with the key release.
          */
         @Override
-        public void keyReleased(KeyEvent keyEvent) {
+        public void keyReleased(@NotNull KeyEvent keyEvent) {
             int keyCode = keyEvent.getKeyCode();
             this.pressedKey = keyCode;
             if (keyCode == KeyEvent.VK_LEFT) {
@@ -904,7 +947,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
          *
          * @param mouseEvent The MouseEvent associated with the mouse drag.
          */
-        public void mouseDragged(MouseEvent mouseEvent) {
+        @Override
+        public void mouseDragged(@NotNull MouseEvent mouseEvent) {
             mouseX = mouseEvent.getX();
             mouseY = mouseEvent.getY();
         }
@@ -914,7 +958,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
          *
          * @param mouseEvent The MouseEvent associated with the mouse movement.
          */
-        public void mouseMoved(MouseEvent mouseEvent) {
+        @Override
+        public void mouseMoved(@NotNull MouseEvent mouseEvent) {
             mouseX = mouseEvent.getX();
             mouseY = mouseEvent.getY();
             if (mouseY < 33 && mouseX < 100) {
@@ -932,11 +977,11 @@ public class Vehicle2 extends JPanel implements ActionListener {
     /**
      * Custom MouseAdapter implementation for handling mouse events in the application.
      */
-    class xMA extends MouseAdapter {
+    class ExMouseAdapter extends MouseAdapter {
         /**
          * Constructs a new xMA (MouseAdapter) instance.
          */
-        xMA() {
+        ExMouseAdapter() {
             // Do nothing
         }
 
@@ -945,7 +990,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
          *
          * @param mouseEvent The MouseEvent associated with the button press.
          */
-        public void mousePressed(MouseEvent mouseEvent) {
+        @Override
+        public void mousePressed(@NotNull MouseEvent mouseEvent) {
             mouseX = mouseEvent.getX();
             mouseY = mouseEvent.getY();
             mouseState = true;
@@ -966,6 +1012,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
          *
          * @param mouseEvent The MouseEvent associated with the button release.
          */
+        @Override
         public void mouseReleased(MouseEvent mouseEvent) {
             mouseState = false;
         }
@@ -1004,18 +1051,18 @@ public class Vehicle2 extends JPanel implements ActionListener {
          * Constructs a WorldParameters object with default values based on configuration settings.
          */
         WorldParameters() {
-            this.maxFrameWidth = screenWidth - 1;
-            this.maxFrameHeight = screenHeight - 1;
-            this.levelWidth = gp.getInt("Bild_w");
-            this.levelHeight = gp.getInt("Bild_h");
-            this.scaleM = 0.01 * (double) gp.getInt("scaleM");
-            this.scaleF = 0.01 * (double) gp.getInt("scaleF");
-            this.scaleSize = 0.01 * (double) gp.getInt("scaleSize");
-            this.dt = 0.001 * (double) gp.getInt("dt");
-            this.delay = gp.getInt("delay");
-            this.gravity = gp.getInt("Gravity");
-            this.friction = 0.001 * (double) gp.getInt("Reibung");
-            this.frictionW = 0.001 * (double) gp.getInt("ReibungW");
+            this.maxFrameWidth = (double) screenWidth - 1;
+            this.maxFrameHeight = (double) screenHeight - 1;
+            this.levelWidth = gp.getInt(GameParams.BILD_W);
+            this.levelHeight = gp.getInt(GameParams.BILD_H);
+            this.scaleM = 0.01 * gp.getInt(GameParams.SCALE_M);
+            this.scaleF = 0.01 * gp.getInt(GameParams.SCALE_F);
+            this.scaleSize = 0.01 * gp.getInt(GameParams.SCALE_SIZE);
+            this.dt = 0.001 * gp.getInt(GameParams.DT);
+            this.delay = gp.getInt(GameParams.DELAY);
+            this.gravity = gp.getInt(GameParams.GRAVITY);
+            this.friction = 0.001 * gp.getInt(GameParams.REIBUNG);
+            this.frictionW = 0.001 * gp.getInt(GameParams.REIBUNG_W);
             this.levelMap = new char[this.levelWidth][this.levelHeight];
         }
 
@@ -1076,17 +1123,16 @@ public class Vehicle2 extends JPanel implements ActionListener {
             px = parts;
             vParts = new VehiclePart[this.py];
             partList = new Connector[this.px];
-            mHook = 0.01 * (double) gp.getInt("mHook");
-            mRope = 0.01 * (double) gp.getInt("mRope");
-            mWheels = 0.01 * (double) gp.getInt("mWheels");
-            mAxis = 0.01 * (double) gp.getInt("mAxis");
-            mCorpus = 0.01 * (double) gp.getInt("mCorpus");
-            ropeMin = worldParameters.scaleF * (double) gp.getInt("FRopeMin");
-            ropeMax = worldParameters.scaleF * (double) gp.getInt("FRopeMax");
+            mHook = 0.01 * gp.getInt("mHook");
+            mRope = 0.01 * gp.getInt("mRope");
+            mWheels = 0.01 * gp.getInt("mWheels");
+            mAxis = 0.01 * gp.getInt("mAxis");
+            mCorpus = 0.01 * gp.getInt("mCorpus");
+            ropeMin = worldParameters.scaleF * gp.getInt("FRopeMin");
+            ropeMax = worldParameters.scaleF * gp.getInt("FRopeMax");
             fWheels = gp.getInt("FWheels");
             fCorpus = gp.getInt("FCorpus");
-            fEngine = 0.1 * worldParameters.scaleSize * worldParameters.dt *
-                    (double) gp.getInt("FEngine");
+            fEngine = 0.1 * worldParameters.scaleSize * worldParameters.dt * gp.getInt("FEngine");
             v0Rope = gp.getInt("v0Rope");
         }
 
@@ -1200,8 +1246,8 @@ public class Vehicle2 extends JPanel implements ActionListener {
          */
         public void drawConnector() {
             graphics.setColor(this.color);
-            graphics.fillRect((int) (this.x - 1.0 - (double) worldParameters.viewportX),
-                    (int) (this.y - 1.0 - (double) worldParameters.viewportY), 3, 3);
+            graphics.fillRect((int) (this.x - 1.0 - worldParameters.viewportX),
+                    (int) (this.y - 1.0 - worldParameters.viewportY), 3, 3);
         }
     }
 }

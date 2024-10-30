@@ -1,4 +1,4 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +19,7 @@ public class OptionsPanel extends JPanel {
      *
      * @see TriggerListener
      */
-    final private ArrayList<TriggerListener> listeners = new ArrayList<>();
+    private final ArrayList<TriggerListener> listeners = new ArrayList<>();
     /**
      * A label displaying the title of the options panel.
      */

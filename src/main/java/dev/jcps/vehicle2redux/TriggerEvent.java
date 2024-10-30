@@ -1,4 +1,4 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
 
 import java.util.EventObject;
 

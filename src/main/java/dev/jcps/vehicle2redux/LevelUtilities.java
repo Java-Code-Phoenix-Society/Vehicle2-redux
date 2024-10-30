@@ -1,4 +1,7 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -21,7 +24,7 @@ public class LevelUtilities {
      *
      * @return An {@code ArrayList} containing the filenames of all level files found in the "Levels" directory.
      */
-    private static ArrayList<String> getLevelList() {
+    private static @NotNull ArrayList<String> getLevelList() {
         ArrayList<String> list = new ArrayList<>();
         URL url = null;
         String urlPath = null;
@@ -29,9 +32,9 @@ public class LevelUtilities {
         try {
             urlPath = "file:///" + System.getProperty("user.dir") + File.separator + "Levels";
             url = new URL(urlPath);
-            if (V2RApp.DEBUG) System.out.println("Loading maps from: " + urlPath);
+            if (V2RApp.debug) V2RApp.logger.info("Loading maps from: {}", urlPath);
         } catch (Exception e) {
-            e.printStackTrace();
+            V2RApp.logger.error(Arrays.toString(e.getStackTrace()));
         }
 
         File file;
@@ -41,9 +44,7 @@ public class LevelUtilities {
             file = new File(new URI(url.toString()));
         } catch (Exception e) {
             String userDir = System.getProperty("user.dir");
-            System.err.println("Error trying to form File in getLevelList from default directory.\n" +
-                    "Attempting to create File directly from user.dir='" + userDir + "' property.\nNotes: " +
-                    "url=" + urlPath + ", urlContext=" + url);
+            V2RApp.logger.error("Error trying to form File in getLevelList from default directory.\nAttempting to create File directly from user.dir='{}' property.\nNotes: url={}, urlContext={}", userDir, urlPath, url);
             file = new File(userDir);
         }
 
@@ -64,41 +65,26 @@ public class LevelUtilities {
      * Searches for the index of the first occurrence of a target string within a text string, starting from a specified index.
      * The search can be performed in a case-sensitive or case-insensitive manner based on the provided boolean flag.
      *
-     * @param text     The text within which the search is performed.
-     * @param target   The target string to search for within the text.
-     * @param index    The starting index of the search.
-     * @param caseBool A boolean flag indicating whether the search should be case-sensitive (true) or case-insensitive (false).
+     * @param text   The text within which the search is performed.
+     * @param target The target string to search for within the text.
      * @return The index of the first occurrence of the target string within the text, or -1 if the target is not found.
      */
-    private static int find(String text, String target, int index, boolean caseBool) {
+    private static int find(@NotNull String text, @NotNull String target) {
         String firstChar = target.substring(0, 1);
         int targetLen = target.length();
         int textLen = text.length();
-        if (index >= -1) {
-            for (int i = index; i < textLen - targetLen + 1; ++i) {
-                String substring = text.substring(i, i + 1);
-                boolean checked = false;
-                if (caseBool) {
-                    if (substring.equalsIgnoreCase(firstChar)) {
-                        checked = true;
-                    }
-                } else if (substring.equals(firstChar)) {
-                    checked = true;
-                }
+        for (int i = 0; i < textLen - targetLen + 1; ++i) {
+            String substring = text.substring(i, i + 1);
+            boolean checked = substring.equalsIgnoreCase(firstChar);
 
-                if (checked) {
-                    String substring1 = text.substring(i, i + targetLen);
-                    if (caseBool) {
-                        if (substring1.equalsIgnoreCase(target)) {
-                            return i;
-                        }
-                    } else if (substring1.equals(target)) {
-                        return i;
-                    }
+            if (checked) {
+                String substring1 = text.substring(i, i + targetLen);
+                if (substring1.equalsIgnoreCase(target)) {
+                    return i;
                 }
             }
-
         }
+
         return -1;
     }
 
@@ -111,7 +97,7 @@ public class LevelUtilities {
      * @return The index of the first occurrence of the target string within the text, or -1 if the target is not found.
      */
     public static int findIgnoreCase(String text, String target) {
-        return find(text, target, 0, true);
+        return find(text, target);
     }
 
     /**
@@ -119,12 +105,12 @@ public class LevelUtilities {
      *
      * @return an {@code ArrayList} of {@code LevelMap} objects; the list might be empty if no level files are found in the directory.
      */
-    public static ArrayList<LevelMap> getLevelMaps() {
+    public static @NotNull ArrayList<LevelMap> getLevelMaps() {
         ArrayList<String> files = getLevelList();
         ArrayList<LevelMap> maps = new ArrayList<>();
-        if (V2RApp.DEBUG) System.out.println("Map Files Loaded:");
+        if (V2RApp.debug) V2RApp.logger.info("Map Files Loaded:");
         for (Object s : files) {
-            if (V2RApp.DEBUG) System.out.println(s);
+            if (V2RApp.debug) V2RApp.logger.info("Loading: {}", s);
             LevelMap map = new LevelMap("Levels/" + s);
             maps.add(map);
         }
@@ -140,7 +126,7 @@ public class LevelUtilities {
      */
     public static void main(String[] args) {
         ArrayList<LevelMap> maps = getLevelMaps();
-        if (V2RApp.DEBUG) System.out.println("Complete");
+        if (V2RApp.debug) V2RApp.logger.info("Complete");
         String test = null;
         String exceptionList = "";
         try {
@@ -148,9 +134,9 @@ public class LevelUtilities {
         } catch (Exception e) {
             exceptionList += e;
         }
-        if (V2RApp.DEBUG) {
-            System.out.println(exceptionList);
-            System.out.println(test);
+        if (V2RApp.debug) {
+            V2RApp.logger.debug(exceptionList);
+            V2RApp.logger.debug(test);
         }
     }
 
@@ -168,7 +154,7 @@ public class LevelUtilities {
             randomAccessFile.seek(0L);
             randomAccessFile.setLength(0L);
         } catch (Exception e) {
-            System.err.println("There was an error preparing the file in writeHashmapToFile().");
+            V2RApp.logger.error("There was an error preparing the file in writeHashmapToFile().");
             return;
         }
 
@@ -179,7 +165,7 @@ public class LevelUtilities {
             }
             randomAccessFile.close();
         } catch (Exception e) {
-            System.err.println("There was an error writing the file in writeHashmapToFile().");
+            V2RApp.logger.error("There was an error writing the file in writeHashmapToFile().");
         }
     }
 
@@ -228,7 +214,7 @@ public class LevelUtilities {
      * @param replacementChar The replacement string.
      * @return The resulting string after performing the replacement.
      */
-    public static String stringReplaceCaseInsensitive(String text, String word, String replacementChar) {
+    public static @NotNull String stringReplaceCaseInsensitive(String text, String word, String replacementChar) {
         ArrayList<String> arrList = breakStringIntoWordsSeparatedByStringCaseInsensitive(text, word);
 
         StringBuilder textBuilder = new StringBuilder();
@@ -253,7 +239,7 @@ public class LevelUtilities {
      * If the original text string is null, returns null.
      * If the word is null or empty, returns an {@code ArrayList} containing the original text string.
      */
-    public static ArrayList<String> breakStringIntoWordsSeparatedByStringCaseInsensitive(String text, String word) {
+    public static @Nullable ArrayList<String> breakStringIntoWordsSeparatedByStringCaseInsensitive(String text, String word) {
         if (word != null && !word.isEmpty()) {
             if (text == null) {
                 return null;

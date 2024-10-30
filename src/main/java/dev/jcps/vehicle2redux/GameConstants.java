@@ -1,4 +1,4 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
 
 /**
  * The {@code GameConstants} class holds static constants representing RGB colour codes used in the game.
@@ -15,6 +15,10 @@ package org.jcps.vehicle2redux;
  * @since 1.0
  */
 public class GameConstants {
+    private GameConstants() {
+        // hidden
+    }
+
     /**
      * The RGB colour code representing 'air' in the game. This colour is used to distinguish 'air' from other elements.
      */

@@ -1,4 +1,6 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -92,7 +94,7 @@ public class LevelMap {
      *
      * @return A {@code HashMap} containing key-value pairs read from the file.
      */
-    private HashMap<String, String> readHashtableFromFile() {
+    private @NotNull HashMap<String, String> readHashtableFromFile() {
         HashMap<String, String> hashMap = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(this.filename))) {
@@ -110,7 +112,7 @@ public class LevelMap {
                 }
             }
         } catch (IOException e) {
-            if (V2RApp.DEBUG) System.out.println("File error: " + e.getMessage());
+            if (V2RApp.debug) System.out.println("File error: " + e.getMessage());
         }
         return hashMap;
     }

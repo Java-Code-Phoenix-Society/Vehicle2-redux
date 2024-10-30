@@ -1,4 +1,6 @@
-package org.jcps.vehicle2redux;
+package dev.jcps.vehicle2redux;
+
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -25,7 +27,7 @@ public class BestTimesPanel extends JPanel {
      *
      * @see TriggerListener
      */
-    final private ArrayList<TriggerListener> listeners = new ArrayList<>();
+    private final ArrayList<TriggerListener> listeners = new ArrayList<>();
 
     /**
      * A JLabel that displays the title of this panel.
@@ -96,7 +98,7 @@ public class BestTimesPanel extends JPanel {
         // Set up the scroll pane
         JScrollPane scrollPane = new JScrollPane(bTimes);
         scrollPane.setPreferredSize(new Dimension(300, 200));
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         // Set up the button
         btnMenu = new JButton("Return to menu");
@@ -125,14 +127,14 @@ public class BestTimesPanel extends JPanel {
      * @return A string representing the formatted time.
      * @throws IllegalArgumentException if the input time is negative.
      */
-    public static String formatTime(String time) {
+    public static @NotNull String formatTime(String time) {
         int seconds = -1;
 
         try {
             seconds = Integer.parseInt(time);
         } catch (Exception e) {
-            if (V2RApp.DEBUG) {
-                System.out.println(e.getMessage() + "\nError parsing time: " + time);
+            if (V2RApp.debug) {
+                V2RApp.logger.error("{}\nError parsing time: {}", e.getMessage(), time);
 
             }
         }
