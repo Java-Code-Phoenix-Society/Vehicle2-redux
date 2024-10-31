@@ -1,6 +1,7 @@
 package dev.jcps.vehicle2redux;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -8,6 +9,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static dev.jcps.vehicle2redux.GameParams.BILD;
+import static dev.jcps.vehicle2redux.GameParams.BILD_C;
 
 /**
  * The {@code LevelMap} class encapsulates the map of a specific game level, stored in a {@code .map} file.
@@ -34,7 +38,7 @@ public class LevelMap {
      *
      * @see GameParams
      */
-    public GameParams lp;
+    private final GameParams lp;
 
     /**
      * Constructs a {@code LevelMap} object based on the specified filename. It initiates a read operation
@@ -42,9 +46,42 @@ public class LevelMap {
      *
      * @param filename The name and path of the file containing the level map data.
      */
-    public LevelMap(String filename) {
+    private LevelMap(String filename) {
         this.filename = filename;
         lp = new GameParams(this.readHashtableFromFile());
+    }
+
+    /**
+     * Retrieves a {@link LevelMap} object based on the specified map path.
+     *
+     * <p>This method attempts to create a {@link LevelMap} instance using the provided
+     * map path. It then checks if the required files, identified by the keys
+     * {@code BILD} and {@code BILD_C} in the parameter map, exist. If both files are found,
+     * the method returns the constructed {@link LevelMap}. Otherwise, it returns {@code null}.</p>
+     *
+     * @param mapPath the path to the level map file
+     * @return the {@link LevelMap} if both required files exist, otherwise {@code null}
+     * @throws NullPointerException if the mapPath is {@code null}
+     */
+    public static @Nullable LevelMap getLevelMap(String mapPath) {
+        LevelMap map = new LevelMap(mapPath);
+
+        // check file exists
+        boolean a = LevelUtilities.fileExists(map.lp.paramMap.get(BILD));
+        boolean b = LevelUtilities.fileExists(map.lp.paramMap.get(BILD_C));
+
+        if (a && b) {
+            return map;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the {@code GameParams} object.
+     * @return the {@code GameParams} object.
+     */
+    public GameParams getGameParams() {
+        return lp;
     }
 
     /**
@@ -78,6 +115,8 @@ public class LevelMap {
         return this.lp.paramMap.size();
     }
 
+    // Private methods
+
     /**
      * Retrieves the filename associated with the {@code LevelMap}.
      *
@@ -86,8 +125,6 @@ public class LevelMap {
     public String getFilename() {
         return this.filename;
     }
-
-    // Private methods
 
     /**
      * Reads key-value pairs from the file and populates the {@code HashMap}.
@@ -112,7 +149,7 @@ public class LevelMap {
                 }
             }
         } catch (IOException e) {
-            if (V2RApp.debug) System.out.println("File error: " + e.getMessage());
+            if (V2RApp.isDebug()) V2RApp.logger.error("File error: {}", e.getMessage());
         }
         return hashMap;
     }
@@ -121,24 +158,17 @@ public class LevelMap {
      * Writes the current {@code HashMap} to the file.
      */
     private void writeHashmapToFile() {
-        RandomAccessFile randomAccessFile;
-        try {
-            randomAccessFile = new RandomAccessFile(this.filename, "rw");
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(this.filename, "rw")) {
             randomAccessFile.seek(0L);
             randomAccessFile.setLength(0L);
-        } catch (Exception e) {
-            System.err.println("There was an error preparing the file in writeHashmapToFile().");
-            return;
-        }
 
-        ArrayList<String> arrayList = new ArrayList<>(this.lp.paramMap.keySet());
-        try {
-            for (String o : arrayList) {
-                randomAccessFile.writeBytes(o + "=" + this.lp.paramMap.get(o) + "\n");
+            ArrayList<String> arrayList = new ArrayList<>(this.lp.paramMap.keySet());
+            for (String key : arrayList) {
+                randomAccessFile.writeBytes(key + "=" + this.lp.paramMap.get(key) + "\n");
             }
-            randomAccessFile.close();
         } catch (Exception e) {
-            System.err.println("There was an error writing the file in writeHashmapToFile().");
+            V2RApp.logger.error("There was an error writing the file in writeHashmapToFile(). {}",
+                    e.getMessage());
         }
     }
 }

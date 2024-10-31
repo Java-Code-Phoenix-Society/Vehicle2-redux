@@ -1,6 +1,7 @@
 package dev.jcps.vehicle2redux;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -22,32 +23,27 @@ import static java.lang.Integer.parseInt;
  * Represents the main panel for the Vehicle2 game functions and implements ActionListener for event handling.
  */
 public class Vehicle2 extends JPanel implements ActionListener {
+    public static final double VELOCITY_MULTIPLIER = 3.0;
+    public static final double SMOOTHING_FACTOR = 0.99;
+    public static final double ADJUSTMENT_FACTOR = 0.01;
     // Fields
-    /**
-     * Static map of level times stored as key-value pairs.
-     */
-    static LinkedHashMap<String, String> levelTimes;
     /**
      * The delay time for staying in the goal state (in milliseconds).
      */
     private static final long DELAY = 5000; // 5 seconds: Time to stay in the goal
     /**
+     * Static map of level times stored as key-value pairs.
+     */
+    static LinkedHashMap<String, String> levelTimes;
+    /**
      * The list of TriggerListeners for handling game events.
      */
     private final ArrayList<TriggerListener> listeners = new ArrayList<>();
-    /**
-     * The current level the game is on.
-     */
-    private int currentLevel;
     /**
      * The game parameters object containing various settings.
      */
     @SuppressWarnings("WeakerAccess")
     public transient GameParams gp;
-    /**
-     * The current running state of the game.
-     */
-    private boolean runState = false;
     /**
      * The list of level maps containing level information.
      */
@@ -98,22 +94,6 @@ public class Vehicle2 extends JPanel implements ActionListener {
      */
     transient Graphics graphics;
     /**
-     * The background image.
-     */
-    private transient Image imgBG;
-    /**
-     * The screen buffer image.
-     */
-    private transient Image screenBuffer;
-    /**
-     * The tile image.
-     */
-    private transient Image tileImg;
-    /**
-     * The media tracker for loading images.
-     */
-    private MediaTracker tracker;
-    /**
      * The player vehicle object.
      */
     transient PlayerVehicle pVehicle;
@@ -137,6 +117,30 @@ public class Vehicle2 extends JPanel implements ActionListener {
      * Represents whether the vehicle is inside the goal.
      */
     boolean insideGoal = false;
+    /**
+     * The current level the game is on.
+     */
+    private int currentLevel;
+    /**
+     * The current running state of the game.
+     */
+    private boolean runState = false;
+    /**
+     * The background image.
+     */
+    private transient Image imgBG;
+    /**
+     * The screen buffer image.
+     */
+    private transient Image screenBuffer;
+    /**
+     * The tile image.
+     */
+    private transient Image tileImg;
+    /**
+     * The media tracker for loading images.
+     */
+    private MediaTracker tracker;
 
     /**
      * Constructs a new instance of the Vehicle2 class.
@@ -194,7 +198,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
      */
     public void init() {
         // Retrieve the current level parameters
-        gp = maps.get(getCurrentLevel()).lp;
+        gp = maps.get(getCurrentLevel()).getGameParams();
 
         // Initialize variables for positioning and dimensions
         int partIndex;
@@ -326,9 +330,10 @@ public class Vehicle2 extends JPanel implements ActionListener {
         }
 
         // Print map information
-        if (V2RApp.debug)
-            V2RApp.logger.info("Map: {}, nf={}, np={}", gp.paramMap.get("Bild_c"), this.pVehicle.ropePart, this.pVehicle.bodyPart);
-
+        if (V2RApp.isDebug()) {
+            String bildc = gp.paramMap.get("Bild_c");
+            V2RApp.logger.info("Map: {}, nf={}, np={}", bildc, this.pVehicle.ropePart, this.pVehicle.bodyPart);
+        }
         // Set the initial position of the game world
         this.worldParameters.wpX = this.pVehicle.partList[this.pVehicle.pCounter].x - ((double) this.screenWidth / 2);
         this.worldParameters.wpY = this.pVehicle.partList[this.pVehicle.pCounter].y - ((double) this.screenHeight / 2);
@@ -490,9 +495,6 @@ public class Vehicle2 extends JPanel implements ActionListener {
      * Function attached to the timer to run the game. Timer acts as a loop.
      */
     public void run() {
-        final double SMOOTHING_FACTOR = 0.99;
-        final double ADJUSTMENT_FACTOR = 0.01;
-        final double VELOCITY_MULTIPLIER = 3.0;
         final int PARTS_COUNT = 20;
         final double ENGINE_FORCE = this.pVehicle.fEngine;
 
@@ -510,22 +512,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
         Connector c = this.pVehicle.partList[this.pVehicle.pCounter];
         d4 /= 20.0;
         d5 /= 20.0;
-        this.worldParameters.wpX = SMOOTHING_FACTOR * this.worldParameters.x + ADJUSTMENT_FACTOR *
-                (c.x + VELOCITY_MULTIPLIER * d4 - ((double) this.screenWidth / 2));
-        this.worldParameters.wpY = SMOOTHING_FACTOR * this.worldParameters.y + ADJUSTMENT_FACTOR *
-                (c.y + VELOCITY_MULTIPLIER * d5 - ((double) this.screenHeight / 2));
-        this.worldParameters.viewportX = (int) this.worldParameters.wpX;
-        this.worldParameters.viewportY = (int) this.worldParameters.wpY;
-        if (this.worldParameters.viewportX < 0) {
-            this.worldParameters.viewportX = 0;
-        } else if (this.worldParameters.viewportX > this.worldParameters.levelWidth - this.screenWidth) {
-            this.worldParameters.viewportX = this.worldParameters.levelWidth - this.screenWidth;
-        }
-        if (this.worldParameters.viewportY < 0) {
-            this.worldParameters.viewportY = 0;
-        } else if (this.worldParameters.viewportY > this.worldParameters.levelHeight - this.screenHeight) {
-            this.worldParameters.viewportY = this.worldParameters.levelHeight - this.screenHeight;
-        }
+        doWheels(c, d4, d5);
 
         // Draw Background
         this.graphics.drawImage(
@@ -684,25 +671,13 @@ public class Vehicle2 extends JPanel implements ActionListener {
             }
             ++n;
         }
-        graphics.setColor(Color.GRAY);
-        graphics.fillRect(10, 10, 85, 18);
-        if (this.mouseY < 33 && this.mouseX < 100) {
-            graphics.setColor(new Color(0, 0, 255));
-        } else {
-            graphics.setColor(Color.black);
-        }
-        graphics.drawRect(10, 10, 85, 18);
-        graphics.drawString("GitHub", 32, 24);
+        Long levelTime = getLevelTime();
+        if (levelTime == null) return;
 
-        // Display simple timer
-        long levelTime = (System.currentTimeMillis() - levelStartTime) / 1000;
-        graphics.setColor(Color.black);
-        graphics.drawString("Time: " + levelTime, 380, 24);
+        completeLevel(levelTime);
+    }
 
-        ++this.gameCounter;
-        this.gameCounter %= 2;
-        if (this.gameCounter != 0) return;
-
+    private void completeLevel(Long levelTime) {
         boolean inside1 = isCoordinateInArea((int) pVehicle.partList[10].x, (int) pVehicle.partList[10].y);
         boolean inside2 = isCoordinateInArea((int) pVehicle.partList[21].x, (int) pVehicle.partList[21].y);
 
@@ -731,18 +706,63 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 graphics.drawString("Stay inside the goal: " + ((DELAY - elapsedTime) / 1000), x, y);
             }
             if (elapsedTime >= DELAY) {
-                this.setRunState(false);
-                int storedTime = 9999;
-                try {
-                    storedTime = parseInt(levelTimes.get(gp.paramMap.get("Bild")));
-                } catch (Exception e) {
-                    if (V2RApp.debug) V2RApp.logger.debug("No stored time..");
-                }
-                if (levelTime < storedTime) {
-                    levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
-                }
-                startTime = System.currentTimeMillis();
+                loadNextLevel(levelTime);
             }
+        }
+    }
+
+    private void loadNextLevel(Long levelTime) {
+        this.setRunState(false);
+        int storedTime = 9999;
+        try {
+            storedTime = parseInt(levelTimes.get(gp.paramMap.get("Bild")));
+        } catch (Exception e) {
+            if (V2RApp.isDebug()) V2RApp.logger.debug("No stored time..");
+        }
+        if (levelTime < storedTime) {
+            levelTimes.put(gp.paramMap.get("Bild"), String.valueOf(levelTime));
+        }
+        startTime = System.currentTimeMillis();
+    }
+
+    private @Nullable Long getLevelTime() {
+        graphics.setColor(Color.GRAY);
+        graphics.fillRect(10, 10, 85, 18);
+        if (this.mouseY < 33 && this.mouseX < 100) {
+            graphics.setColor(new Color(0, 0, 255));
+        } else {
+            graphics.setColor(Color.black);
+        }
+        graphics.drawRect(10, 10, 85, 18);
+        graphics.drawString("GitHub", 32, 24);
+
+        // Display simple timer
+        long levelTime = (System.currentTimeMillis() - levelStartTime) / 1000;
+        graphics.setColor(Color.black);
+        graphics.drawString("Time: " + levelTime, 380, 24);
+
+        ++this.gameCounter;
+        this.gameCounter %= 2;
+        if (this.gameCounter != 0) return null;
+        return levelTime;
+    }
+
+    private void doWheels(@NotNull Connector c, double d4, double d5) {
+        this.worldParameters.wpX = SMOOTHING_FACTOR * this.worldParameters.x + ADJUSTMENT_FACTOR *
+                (c.x + VELOCITY_MULTIPLIER * d4 - ((double) this.screenWidth / 2));
+        this.worldParameters.wpY = SMOOTHING_FACTOR * this.worldParameters.y + ADJUSTMENT_FACTOR *
+                (c.y + VELOCITY_MULTIPLIER * d5 - ((double) this.screenHeight / 2));
+        this.worldParameters.viewportX = (int) this.worldParameters.wpX;
+        this.worldParameters.viewportY = (int) this.worldParameters.wpY;
+        if (this.worldParameters.viewportX < 0) {
+            this.worldParameters.viewportX = 0;
+        } else if (this.worldParameters.viewportX > this.worldParameters.levelWidth - this.screenWidth) {
+            this.worldParameters.viewportX = this.worldParameters.levelWidth - this.screenWidth;
+        }
+        if (this.worldParameters.viewportY < 0) {
+            this.worldParameters.viewportY = 0;
+        } else if (this.worldParameters.viewportY > this.worldParameters.levelHeight - this.screenHeight) {
+            this.worldParameters.viewportY = this.worldParameters.levelHeight - this.screenHeight;
         }
     }
 
@@ -786,7 +806,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
             try {
                 imgBuffer = ImageIO.read(imageFile);
             } catch (IOException e) {
-                if (V2RApp.debug) {
+                if (V2RApp.isDebug()) {
                     V2RApp.logger.warn("Image not found! {}", e.getMessage());
                 }
             }
@@ -809,7 +829,7 @@ public class Vehicle2 extends JPanel implements ActionListener {
                 // Opens the specified URL in the default web browser.
                 Desktop.getDesktop().browse(url.toURI());
             } catch (IOException | URISyntaxException e) {
-                if (V2RApp.debug) {
+                if (V2RApp.isDebug()) {
                     V2RApp.logger.error("Error opening URL in browser: {}", e.getMessage());
                 }
             }

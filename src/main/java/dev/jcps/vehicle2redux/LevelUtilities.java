@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -32,7 +34,7 @@ public class LevelUtilities {
         try {
             urlPath = "file:///" + System.getProperty("user.dir") + File.separator + "Levels";
             url = new URL(urlPath);
-            if (V2RApp.debug) V2RApp.logger.info("Loading maps from: {}", urlPath);
+            if (V2RApp.isDebug()) V2RApp.logger.info("Loading maps from: {}", urlPath);
         } catch (Exception e) {
             V2RApp.logger.error(Arrays.toString(e.getStackTrace()));
         }
@@ -44,13 +46,14 @@ public class LevelUtilities {
             file = new File(new URI(url.toString()));
         } catch (Exception e) {
             String userDir = System.getProperty("user.dir");
-            V2RApp.logger.error("Error trying to form File in getLevelList from default directory.\nAttempting to create File directly from user.dir='{}' property.\nNotes: url={}, urlContext={}", userDir, urlPath, url);
+            V2RApp.logger.error("Error trying to form File from default directory.\nAttempting to create File directly from user.dir='{}' property.\nNotes: url={}, urlContext={}", userDir, urlPath, url);
             file = new File(userDir);
         }
 
         File[] files = file.listFiles();
 
         if (files != null) {
+            Arrays.sort(files, Comparator.comparing(File::getName));
             for (File curFile : files) {
                 String curName = curFile.getName();
                 if (findIgnoreCase(curName, ".map") != -1 && curFile.isFile()) {
@@ -108,11 +111,18 @@ public class LevelUtilities {
     public static @NotNull ArrayList<LevelMap> getLevelMaps() {
         ArrayList<String> files = getLevelList();
         ArrayList<LevelMap> maps = new ArrayList<>();
-        if (V2RApp.debug) V2RApp.logger.info("Map Files Loaded:");
+        if (V2RApp.isDebug()) V2RApp.logger.info("Map Files Loaded:");
         for (Object s : files) {
-            if (V2RApp.debug) V2RApp.logger.info("Loading: {}", s);
-            LevelMap map = new LevelMap("Levels/" + s);
-            maps.add(map);
+            if (V2RApp.isDebug()) V2RApp.logger.info("Loading: {}", s);
+            try {
+                LevelMap map = LevelMap.getLevelMap("Levels/" + s);
+                if (map == null) { //NOSONAR : will be null if the map files fail validation.
+                    throw new NullPointerException();
+                }
+                maps.add(map);
+            } catch (Exception e) {
+                V2RApp.logger.warn("Couldn't load file: {}", s);
+            }
         }
         return maps;
     }
@@ -126,15 +136,15 @@ public class LevelUtilities {
      */
     public static void main(String[] args) {
         ArrayList<LevelMap> maps = getLevelMaps();
-        if (V2RApp.debug) V2RApp.logger.info("Complete");
+        if (V2RApp.isDebug()) V2RApp.logger.info("Map loading complete!");
         String test = null;
         String exceptionList = "";
         try {
-            test = String.valueOf(maps.get(0).get("Bild"));
+            test = String.valueOf(maps.get(0).get(GameParams.BILD));
         } catch (Exception e) {
             exceptionList += e;
         }
-        if (V2RApp.debug) {
+        if (V2RApp.isDebug()) {
             V2RApp.logger.debug(exceptionList);
             V2RApp.logger.debug(test);
         }
@@ -148,24 +158,15 @@ public class LevelUtilities {
      * @param filename The name of the file to which the {@code HashMap} will be written.
      */
     public static void writeHashmapToFile(HashMap<String, String> map, String filename) {
-        RandomAccessFile randomAccessFile;
-        try {
-            randomAccessFile = new RandomAccessFile(filename, "rw");
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(filename, "rw")) {
             randomAccessFile.seek(0L);
             randomAccessFile.setLength(0L);
-        } catch (Exception e) {
-            V2RApp.logger.error("There was an error preparing the file in writeHashmapToFile().");
-            return;
-        }
 
-        ArrayList<String> arrayList = new ArrayList<>(map.keySet());
-        try {
-            for (String o : arrayList) {
-                randomAccessFile.writeBytes(o + "=" + map.get(o) + "\n");
+            for (Map.Entry<String, String> kv : map.entrySet()) {
+                randomAccessFile.writeBytes(kv.getKey() + "=" + map.get(kv.getKey()) + "\n");
             }
-            randomAccessFile.close();
         } catch (Exception e) {
-            V2RApp.logger.error("There was an error writing the file in writeHashmapToFile().");
+            V2RApp.logger.error("There was an error writing the file. {}", e.getMessage());
         }
     }
 
@@ -185,6 +186,7 @@ public class LevelUtilities {
             fileContent = new byte[(int) file.length()];
             file.readFully(fileContent);
         } catch (Exception e) {
+            V2RApp.logger.warn(e.getMessage());
             return hashMap;
         }
 
@@ -254,5 +256,20 @@ public class LevelUtilities {
             arrayList.add(text);
             return arrayList;
         }
+    }
+
+    /**
+     * Checks the input path to see if the file exists.
+     *
+     * @param pathString path to check.
+     * @return {@code true} if file exists.
+     */
+    public static boolean fileExists(@NotNull String pathString) {
+        try {
+            return Files.exists(Paths.get(pathString));
+        } catch (Exception e) {
+            V2RApp.logger.warn(Arrays.toString(e.getStackTrace()));
+        }
+        return false;
     }
 }

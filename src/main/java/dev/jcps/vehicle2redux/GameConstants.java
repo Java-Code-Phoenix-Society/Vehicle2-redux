@@ -15,35 +15,31 @@ package dev.jcps.vehicle2redux;
  * @since 1.0
  */
 public class GameConstants {
-    private GameConstants() {
-        // hidden
-    }
-
     /**
      * The RGB colour code representing 'air' in the game. This colour is used to distinguish 'air' from other elements.
      */
     public static final int AIR_COLOR = 0xFFFFFF;
-
     /**
      * The RGB colour code representing 'water' in the game. This colour helps the game identify 'water' areas
      * in the level.
      */
     public static final int WATER_COLOR = 11129855;
-
     /**
      * The RGB colour code representing 'ground' in the game. This colour help identify 'ground' areas within the level.
      */
     public static final int GROUND_COLOR = 10643504;
-
     /**
      * The RGB colour code representing a specific element 'a' in the game. This colour is used to distinguish
      * element 'a' from other elements.
      */
     public static final int ELEMENT_A = 0x828181;
-
     /**
      * The RGB colour code representing another specific element 'b' in the game. This colour is used to distinguish
      * element 'b' from other elements.
      */
     public static final int ELEMENT_B = 8023138;
+
+    private GameConstants() {
+        // hidden
+    }
 }

@@ -37,7 +37,7 @@ public class LevelSelectPanel extends JPanel {
      *
      * @see TriggerListener
      */
-    final private ArrayList<TriggerListener> listeners = new ArrayList<>();
+    private final ArrayList<TriggerListener> listeners = new ArrayList<>();
     /**
      * A list of {@code JButtons} representing the levels. Each button corresponds to a level and shows an associated image.
      *
@@ -66,7 +66,7 @@ public class LevelSelectPanel extends JPanel {
             btn.addActionListener(e -> {
                 JButton button = (JButton) e.getSource();
                 String btnText = button.getText();
-                if (V2RApp.debug) System.out.println("Selected level: " + btnText);
+                if (V2RApp.isDebug()) V2RApp.logger.info("Selected level: {}", btnText);
                 fireEvent("map:" + finalMapIndex);
             });
             btnLevels.add(btn);
@@ -136,8 +136,8 @@ public class LevelSelectPanel extends JPanel {
             description = imagePath.substring(startIndex, endIndex);
 
         } catch (IOException e) {
-            if (V2RApp.debug) {
-                System.err.println("Error loading image: " + imagePath + e.getMessage());
+            if (V2RApp.isDebug()) {
+                V2RApp.logger.error("Error loading image: {} | {}", imagePath, e.getMessage());
             }
         } finally {
             button.setVerticalTextPosition(SwingConstants.BOTTOM);

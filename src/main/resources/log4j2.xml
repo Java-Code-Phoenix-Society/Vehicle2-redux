@@ -8,7 +8,7 @@
 
         <File name="File-Appender" fileName="${sys:LOG_FILE_NAME:-logs/log4j.log}">
             <PatternLayout>
-                <pattern>%d %p [%t] %C{1}.%M() : %m%n</pattern>
+                <pattern>%d{ISO8601} [%t] %-5p %C{1}.%M() (Line: %L) : %m%n</pattern>
             </PatternLayout>
         </File>
 

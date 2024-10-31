@@ -133,7 +133,7 @@ public class BestTimesPanel extends JPanel {
         try {
             seconds = Integer.parseInt(time);
         } catch (Exception e) {
-            if (V2RApp.debug) {
+            if (V2RApp.isDebug()) {
                 V2RApp.logger.error("{}\nError parsing time: {}", e.getMessage(), time);
 
             }

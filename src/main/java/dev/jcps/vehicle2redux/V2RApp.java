@@ -49,23 +49,19 @@ public class V2RApp extends JFrame implements TriggerListener {
     public static final String LEVEL_TIMES = "Level-times.txt";
 
     // General variables
-
-    /**
-     * The current game state.
-     */
-    public static int gameState;
-    /**
-     * Static debug flag. Set to true to show debugging information.
-     */
-    public static boolean debug = false;
-    /**
-     * The Timer instance for handling game events.
-     */
-    private static Timer timer = null;
     /**
      * The delay interval for the timer (in milliseconds).
      */
     private static final int DELAY = 10;
+    /**
+     * The current game state.
+     */
+    private static int gameState;
+    private static boolean debug = false;
+    /**
+     * The Timer instance for handling game events.
+     */
+    private static Timer timer = null;
     /**
      * The MenuPanel instance representing the main menu of the game.
      * The menu provides options for starting the game, selecting a level, configuring options, and exiting the game.
@@ -156,7 +152,7 @@ public class V2RApp extends JFrame implements TriggerListener {
     public static void main(String @NotNull [] args) {
         for (String arg : args) {
             if (arg.startsWith("--debug")) {
-                V2RApp.debug = true;
+                V2RApp.setDebug(true);
                 break;
             }
         }
@@ -171,9 +167,25 @@ public class V2RApp extends JFrame implements TriggerListener {
         v2r.btp.addEventListener(v2r);
         v2r.add(v2r.mp, BorderLayout.CENTER);
 
-        gameState = MENU_PANEL;
+        setGameState(MENU_PANEL);
         v2r.revalidate();
         v2r.repaint();
+    }
+
+    public static int getGameState() {
+        return gameState;
+    }
+
+    public static void setGameState(int gameState) {
+        V2RApp.gameState = gameState;
+    }
+
+    public static boolean isDebug() {
+        return debug;
+    }
+
+    public static void setDebug(boolean debug) {
+        V2RApp.debug = debug;
     }
 
     private void centerWindow(int w) {
@@ -200,7 +212,7 @@ public class V2RApp extends JFrame implements TriggerListener {
      * The method concludes by repainting the JFrame for visual updates.
      */
     private void update() {
-        if (gameState == GAME_PANEL) {
+        if (getGameState() == GAME_PANEL) {
             if (getVehicle2r().isRunning()) {
                 getVehicle2r().run();
             } else {
@@ -213,7 +225,8 @@ public class V2RApp extends JFrame implements TriggerListener {
                 }
 
                 if (getVehicle2r().getCurrentLevel() < getVehicle2r().maps.size()) {
-                    if (getVehicle2r().gp != getVehicle2r().maps.get(getVehicle2r().getCurrentLevel()).lp) {
+                    if (getVehicle2r().gp !=
+                            getVehicle2r().maps.get(getVehicle2r().getCurrentLevel()).getGameParams()) {
                         getVehicle2r().init();
                         timer.start();
                     } else {
@@ -225,7 +238,7 @@ public class V2RApp extends JFrame implements TriggerListener {
             }
         }
 
-        if (gameState == MENU_PANEL && timer.isRunning()) timer.stop();
+        if (getGameState() == MENU_PANEL && timer.isRunning()) timer.stop();
 
         repaint();
     }
@@ -237,7 +250,7 @@ public class V2RApp extends JFrame implements TriggerListener {
      * The UI is revalidated and repainted to reflect these changes.
      */
     private void returnToMenu() {
-        gameState = MENU_PANEL;
+        setGameState(MENU_PANEL);
         getContentPane().removeAll();
         add(this.mp);
     }
@@ -253,7 +266,7 @@ public class V2RApp extends JFrame implements TriggerListener {
         if (!getVehicle2r().maps.isEmpty()) {
             this.getContentPane().removeAll();
             this.add(getVehicle2r());
-            gameState = GAME_PANEL;
+            setGameState(GAME_PANEL);
             getVehicle2r().screenWidth = this.getWidth();
             getVehicle2r().screenHeight = this.getHeight();
             getVehicle2r().init();
@@ -264,6 +277,7 @@ public class V2RApp extends JFrame implements TriggerListener {
                     "Can not start the game. There are no map files in the Levels/ directory",
                     "Error", JOptionPane.ERROR_MESSAGE
             );
+            V2RApp.logger.error("No map files found!");
         }
     }
 
@@ -277,14 +291,14 @@ public class V2RApp extends JFrame implements TriggerListener {
     @Override
     public void onEventOccurred(@NotNull TriggerEvent event) {
         String message = event.getMessage();
-        if (debug) V2RApp.logger.debug("Event occurred: {}", message);
+        if (isDebug()) V2RApp.logger.debug("Event occurred: {}", message);
         if (message.startsWith("exit_loop")) {
-            if (gameState == MENU_PANEL) {
+            if (getGameState() == MENU_PANEL) {
                 System.exit(0);
             }
-            if (gameState == OPTIONS_PANEL || gameState == SELECT_PANEL || gameState == BEST_TIMES) {
+            if (getGameState() == OPTIONS_PANEL || getGameState() == SELECT_PANEL || getGameState() == BEST_TIMES) {
                 timer.stop();
-                if (gameState == OPTIONS_PANEL) {
+                if (getGameState() == OPTIONS_PANEL) {
                     int newSize = Integer.parseInt(message.substring(message.lastIndexOf(':') + 1));
                     switch (newSize) {
                         case 320 -> centerWindow(320);
@@ -293,13 +307,13 @@ public class V2RApp extends JFrame implements TriggerListener {
                     }
 
                 }
-                gameState = MENU_PANEL;
+                setGameState(MENU_PANEL);
                 this.getContentPane().removeAll();
                 this.add(this.mp);
             }
-            if (gameState == GAME_PANEL) {
+            if (getGameState() == GAME_PANEL) {
                 timer.stop();
-                gameState = MENU_PANEL;
+                setGameState(MENU_PANEL);
                 getVehicle2r().setCurrentLevel(0);
                 prevLevel = -1;
                 this.getContentPane().removeAll();
@@ -307,7 +321,7 @@ public class V2RApp extends JFrame implements TriggerListener {
             }
         }
         if (message.contains("gotoBestTimes")) {
-            gameState = BEST_TIMES;
+            setGameState(BEST_TIMES);
             this.getContentPane().removeAll();
             this.btp = new BestTimesPanel();
             this.btp.addEventListener(this);
@@ -316,7 +330,7 @@ public class V2RApp extends JFrame implements TriggerListener {
         if (message.contains("map:")) {
             String msg = message.substring(message.lastIndexOf(':') + 1);
 
-            if (debug) V2RApp.logger.debug("Go to map: {}", msg);
+            if (isDebug()) V2RApp.logger.debug("Go to map: {}", msg);
             getVehicle2r().setCurrentLevel(Integer.parseInt(msg));
             prevLevel = -2;
             startGame();
@@ -335,7 +349,7 @@ public class V2RApp extends JFrame implements TriggerListener {
     private void openOptions() {
         this.getContentPane().removeAll();
         this.add(this.optionsPanel);
-        gameState = OPTIONS_PANEL;
+        setGameState(OPTIONS_PANEL);
         revalidate();
         repaint();
     }
@@ -352,7 +366,7 @@ public class V2RApp extends JFrame implements TriggerListener {
         if (!getVehicle2r().maps.isEmpty()) {
             this.getContentPane().removeAll();
             this.add(this.levelSelectPanel);
-            gameState = SELECT_PANEL;
+            setGameState(SELECT_PANEL);
         } else {
             JOptionPane.showMessageDialog(null,
                     "Can not start the game. There are no map files in the Levels/ directory",
@@ -363,10 +377,20 @@ public class V2RApp extends JFrame implements TriggerListener {
         repaint();
     }
 
+    /**
+     * Gets the Vehicle2 object.
+     *
+     * @return the main {@link Vehicle2} object.
+     */
     public Vehicle2 getVehicle2r() {
         return vehicle2r;
     }
 
+    /**
+     * Sets the main {@link Vehicle2} object to the input.
+     *
+     * @param vehicle2r sets the {@code Vehicle2} object to the input object.
+     */
     public void setVehicle2r(Vehicle2 vehicle2r) {
         this.vehicle2r = vehicle2r;
     }
